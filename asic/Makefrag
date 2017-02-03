@@ -1,0 +1,93 @@
+#=========================================================================
+# ECE 5745 ASIC FLOW
+#=========================================================================
+# We use this top-level makefile fragment to configure the ASIC flow. We
+# specify various variables for many different designs, and then use the
+# 'design' variable to choose which design to push through the flow.
+
+#-------------------------------------------------------------------------
+# Standard Cells
+#-------------------------------------------------------------------------
+
+cells     = saed-90nm-synopsys-cells
+cells_dir = $(BARE_PKGS_GLOBAL_ROOT)/noarch/$(cells)
+
+#-------------------------------------------------------------------------
+# Make Variables
+#-------------------------------------------------------------------------
+# These are the variables that must be defined in order to push a design
+# through the flow:
+#
+#  - clock_period  : This is the target cycle time in nanoseconds. You
+#                    want to choose a target cycle time which is not so
+#                    large that you are not pushing the tools very hard,
+#                    but also not so small that the tools take forever to
+#                    run.
+#
+#  - vsrc          : This is the filename of the Verilog source file
+#                    containing the module we want to push through the
+#                    toolflow. You should never include any kind
+#                    of path in this variable.
+#
+#  - vcd           : This is the filename of the VCD file that we should
+#                    use for energy estimation. Note that you can change
+#                    this variable and just rerun pt-pwr power analysis
+#                    without having to push the entire design through
+#                    synthesis and place-and-route again.
+
+#-------------------------------------------------------------------------
+# Generating Verilog
+#-------------------------------------------------------------------------
+# Here is how to push the GCD unit through the flow. Note that to push
+# the Verilog implementation through the flow, simply replace tut3_pymtl
+# with tut4_verilog.
+#
+#  % mkdir ${HOME}/ece5745
+#  % git clone git@github.com:cornell-ece5745/ece5745-labs.git
+#  % cd ece5745-labs
+#  % TOPDIR=$PWD
+#
+#  % mkdir -p $TOPDIR/sim/build
+#  % cd $TOPDIR/sim/build
+#  % py.test ../tut3_pymtl/gcd
+#  % py.test ../tut3_pymtl/gcd --test-verilog
+#  % ../tut3_pymtl/gcd/gcd-sim --impl rtl --input random \
+#      --translate --dump-vcd
+#
+#  % cd $TOPDIR/asic/dc-syn  && make
+#  % cd $TOPDIR/asic/icc-par && make
+#  % cd $TOPDIR/asic/pt-pwr  && make
+#
+
+#-------------------------------------------------------------------------
+# Designs
+#-------------------------------------------------------------------------
+# To simplify pushing different designs through the flow, we use a make
+# conditional to choose the design based on a the "design" make variable.
+# This way you can just set the "design" make variable to push a specific
+# design through the flow.
+
+design = sort-unit
+
+#-------------------------------------------------------------------------
+# Tutorial Designs
+#-------------------------------------------------------------------------
+
+# Sort Unit
+
+ifeq ($(design),sort-unit)
+  clock_period  = 1.0
+  vsrc          = SortUnitStructRTL_0x73ab8da9cdd886de.v
+  vcd           = sort-rtl-struct-random.verilator1.vcd
+endif
+
+# GCD Unit
+
+ifeq ($(design),gcd-unit)
+  clock_period  = 2.0
+  vsrc          = GcdUnitRTL_0x4d0fc71ead8d3d9e.v
+  vcd           = gcd-rtl-random.verilator1.vcd
+endif
+
+# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
