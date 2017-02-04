@@ -49,8 +49,8 @@ cells_dir = $(BARE_PKGS_GLOBAL_ROOT)/noarch/$(cells)
 #
 #  % mkdir -p $TOPDIR/sim/build
 #  % cd $TOPDIR/sim/build
-#  % py.test ../tut3_pymtl/gcd
-#  % py.test ../tut3_pymtl/gcd --test-verilog
+#  % py.test ../tut3_pymtl/gcd/test
+#  % py.test ../tut3_pymtl/gcd/test --test-verilog
 #  % ../tut3_pymtl/gcd/gcd-sim --impl rtl --input random \
 #      --translate --dump-vcd
 #

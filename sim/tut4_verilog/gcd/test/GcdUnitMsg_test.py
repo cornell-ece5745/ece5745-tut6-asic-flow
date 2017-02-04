@@ -3,8 +3,8 @@
 #=========================================================================
 # Test suite for the GCD unit message
 
-from pymtl      import *
-from GcdUnitMsg import GcdUnitReqMsg
+from pymtl                       import *
+from tut4_verilog.gcd.GcdUnitMsg import GcdUnitReqMsg
 
 #-------------------------------------------------------------------------
 # test_fields

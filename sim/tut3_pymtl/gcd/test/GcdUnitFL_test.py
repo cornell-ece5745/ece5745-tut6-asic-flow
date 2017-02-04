@@ -12,8 +12,8 @@ from pymtl      import *
 from pclib.test import mk_test_case_table, run_sim
 from pclib.test import TestSource, TestSink
 
-from GcdUnitFL  import GcdUnitFL
-from GcdUnitMsg import GcdUnitReqMsg
+from tut3_pymtl.gcd.GcdUnitFL  import GcdUnitFL
+from tut3_pymtl.gcd.GcdUnitMsg import GcdUnitReqMsg
 
 #-------------------------------------------------------------------------
 # TestHarness

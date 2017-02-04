@@ -212,7 +212,9 @@ if {$ICC_REPORTING_EFFORT != "OFF" } {
  redirect -file $REPORTS_DIR_CHIP_FINISH/$ICC_CHIP_FINISH_CEL.min.tim {report_timing -crosstalk_delta -capacitance -transition_time -input_pins -nets -delay min}
 }
 #    verify_zrt_route -antenna true
-#    verify_zrt_route -antenna false
+
+verify_zrt_route -antenna false
+
 if {$ICC_REPORTING_EFFORT != "OFF" } {
  redirect -tee -file $REPORTS_DIR_CHIP_FINISH/$ICC_CHIP_FINISH_CEL.sum {report_design_physical -all -verbose}
 }

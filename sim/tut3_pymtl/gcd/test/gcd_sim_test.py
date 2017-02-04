@@ -17,8 +17,9 @@ def test( impl, input_, test_verilog ):
 
   # Get path to simulator script
 
-  sim_dir = os.path.dirname( os.path.abspath( __file__ ) )
-  sim     = sim_dir + os.path.sep + 'gcd-sim'
+  test_dir = os.path.dirname( os.path.abspath( __file__ ) )
+  sim_dir  = os.path.dirname( test_dir )
+  sim      = sim_dir + os.path.sep + 'gcd-sim'
 
   # Command
 

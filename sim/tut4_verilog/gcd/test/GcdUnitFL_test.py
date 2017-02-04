@@ -12,8 +12,8 @@ from pymtl      import *
 from pclib.test import mk_test_case_table, run_sim
 from pclib.test import TestSource, TestSink
 
-from GcdUnitFL  import GcdUnitFL
-from GcdUnitMsg import GcdUnitReqMsg
+from tut4_verilog.gcd.GcdUnitFL  import GcdUnitFL
+from tut4_verilog.gcd.GcdUnitMsg import GcdUnitReqMsg
 
 #-------------------------------------------------------------------------
 # TestHarness

@@ -15,10 +15,16 @@ __pycache__/
 .DS_Store
 .cache/
 *~
+
 asic/dc-syn/current-dc
+
 asic/icc-par/current-icc
 asic/icc-par/current-iccdp
+asic/icc-par/command.log
+asic/icc-par/icc_output.txt
+
 asic/pt-pwr/current-pt
+
 *.bak
 asic/cacti-mc/SRAM_*/
 asic/cacti-mc/*.db

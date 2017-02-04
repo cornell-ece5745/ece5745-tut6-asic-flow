@@ -33,16 +33,16 @@ while sim_dir:
 import argparse
 import re
 
-from random         import randint
-from fractions      import gcd
+from random              import randint
+from fractions           import gcd
 
-from pymtl          import *
+from pymtl               import *
 
-from GcdUnitFL      import GcdUnitFL
-from GcdUnitCL      import GcdUnitCL
-from GcdUnitRTL     import GcdUnitRTL
+from GcdUnitFL           import GcdUnitFL
+from GcdUnitCL           import GcdUnitCL
+from GcdUnitRTL          import GcdUnitRTL
 
-from GcdUnitFL_test import TestHarness
+from test.GcdUnitFL_test import TestHarness
 
 #-------------------------------------------------------------------------
 # Command line processing
