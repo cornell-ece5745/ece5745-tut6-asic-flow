@@ -43,7 +43,7 @@ set DFT                           FALSE	       ;# TRUE|FALSE; set to TRUE to ena
 # YUNSUP: changed for fast p&r
 set ICC_DBL_VIA                   FALSE        ;# TRUE|FALSE; set to TRUE to enable detail route wire spreading
 set ICC_FIX_ANTENNA               FALSE        ;# TRUE|FALSE: set to TRUE to enable antenna fixing
-set ADD_FILLER_CELL               FALSE        ;# TRUE|FALSE; set to TRUE to enable std cells filler insertion
+set ADD_FILLER_CELL               TRUE         ;# TRUE|FALSE; set to TRUE to enable std cells filler insertion
 # YUNSUP: changed for fast p&r
 set ICC_REDUCE_CRITICAL_AREA      FALSE        ;# TRUE|FALSE; set to TRUE to enable detail route wire spreading
 set ICC_CREATE_MODEL              FALSE        ;# TRUE|FALSE; used for ILM/FRAM creation for the blocks in HRM

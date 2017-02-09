@@ -30,7 +30,7 @@ install:
 
  # Install PyMTL
 
- - pip -q install git+https://github.com/cornell-brg/pymtl.git@ece4750
+ - pip -q install git+https://github.com/cornell-brg/pymtl.git
  - pip list
 
 #------------------------------------------------------------------------

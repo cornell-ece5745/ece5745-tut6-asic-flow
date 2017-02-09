@@ -644,10 +644,12 @@ You can view the area report like this.
 
 This report is similar to what we saw in the previous tutorial. Note that
 the total cell area is different from the total area. The total cell area
-includes just the standard cells, while the totral area includes filler
-cells. We will want to use the total area in our analysis. Again these
-numbers are not identical to the previous tutorial, since the ASIC flow
-uses more commands with different options than what we did manually.
+includes just the standard cells, while the total area includes the "Net
+Interconnect Area". To be totally honest, I am not quite sure what "Net
+Interconnect Area" actually means, but we use the total area in our
+analysis. Again these numbers are not identical to the previous tutorial,
+since the ASIC flow uses more commands with different options than what
+we did manually.
 
 We have written a little script to parse the reports and generate a
 `summary.txt` file. This script takes care of looking across all four
