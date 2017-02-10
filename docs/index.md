@@ -5,6 +5,20 @@ ECE 5745 Tutorial 6: Automated ASIC Flow
  - Author: Christopher Batten
  - Date: February 1, 2017
 
+**Table of Contents**
+
+ - Introduction
+ - PyMTL-Based Testing, Simulation, Translation
+ - Using Synopsys Design Compiler for Synthesis
+ - Using Synopsys IC Compiler for Place-and-Route
+ - Using Synopsys PrimeTime for Power Analysis
+ - Using Verilog RTL Models
+ - Using the Automated ASIC Flow for Design-Space Exploration
+ - Pushing GCD Unit Through the Automated ASIC Flow
+
+Introduction
+--------------------------------------------------------------------------
+
 The previous tutorial introduced students to the key tools used for
 synthesis, place-and-route, and power analysis, but the previous tutorial
 required students to enter commands manually for each tool. This is
@@ -26,20 +40,6 @@ garbage-out. If you are not careful it is all to easy to use the ASIC
 flow to analyze a completely invalid design. This tutorial assumes you
 have already completed the tutorials on Linux, Git, PyMTL, Verilog, and
 the Synopsys ASIC tools.
-
-**Table of Contents**
-
- - Overview of the Automated ASIC Flow
- - PyMTL-Based Testing, Simulation, Translation
- - Using Synopsys Design Compiler for Synthesis
- - Using Synopsys IC Compiler for Place-and-Route
- - Using Synopsys PrimeTime for Power Analysis
- - Using Verilog RTL Models
- - Using the Automated ASIC Flow for Design-Space Exploration
- - Pushing GCD Unit Through the Automated ASIC Flow
-
-Overview of the Automated ASIC Flow
---------------------------------------------------------------------------
 
 The following diagram illustrates the four primary tools we will be using
 in ECE 5745. Notice that this toolflow diagram is higher level than the
