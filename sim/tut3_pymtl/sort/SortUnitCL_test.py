@@ -5,11 +5,15 @@
 import pytest
 
 from copy       import deepcopy
-from random     import randint
+from random     import randint, seed
 
 from pymtl      import *
 from pclib.test import run_test_vector_sim, mk_test_case_table
 from SortUnitCL import SortUnitCL
+
+# To ensure reproducible testing
+
+seed(0xdeadbeef)
 
 #-------------------------------------------------------------------------
 # Syntax helpers

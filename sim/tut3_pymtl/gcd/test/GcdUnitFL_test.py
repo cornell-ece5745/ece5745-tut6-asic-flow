@@ -15,6 +15,10 @@ from pclib.test import TestSource, TestSink
 from tut3_pymtl.gcd.GcdUnitFL  import GcdUnitFL
 from tut3_pymtl.gcd.GcdUnitMsg import GcdUnitReqMsg
 
+# To ensure reproducible testing
+
+random.seed(0xdeadbeef)
+
 #-------------------------------------------------------------------------
 # TestHarness
 #-------------------------------------------------------------------------
@@ -88,7 +92,7 @@ basic_msgs = [
 
 random.seed(0xdeadbeef)
 random_msgs = []
-for i in xrange(20):
+for i in xrange(30):
   a = random.randint(0,0xffff)
   b = random.randint(0,0xffff)
   c = gcd( a, b )

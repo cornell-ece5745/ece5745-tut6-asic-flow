@@ -84,6 +84,8 @@ typedef struct packed {
 // Memory Request Message: Trace message
 //------------------------------------------------------------------------
 
+`ifndef SYNTHESIS
+
 module vc_MemReqMsg4BTrace
 (
   input logic         clk,
@@ -232,6 +234,8 @@ module vc_MemReqMsg16BTrace
 
 endmodule
 
+`endif
+
 //========================================================================
 // Memory Response Message
 //========================================================================
@@ -305,6 +309,8 @@ typedef struct packed {
 //------------------------------------------------------------------------
 // Memory Response Message: Trace message
 //------------------------------------------------------------------------
+
+`ifndef SYNTHESIS
 
 module vc_MemRespMsg4BTrace
 (
@@ -449,6 +455,7 @@ module vc_MemRespMsg16BTrace
   `VC_TRACE_END
 
 endmodule
+`endif
 
 `endif /* VC_MEM_MSGS_V */
 

@@ -18,7 +18,15 @@ include ../Makefrag
 # instead of requiring the user to specify them.
 
 sim_build_dir = sim/build
-vmname = $(strip $(patsubst %.v, %, $(vsrc)))
+
+vmname_temp = $(strip $(patsubst %.v, %, $(vsrc)))
+
+# When we use SRAMs we end up with a _blackbox.v file. We need to also
+# strip the _blackbox suffix to make the verilog module name. If there is
+# no _blacbox suffix then this will just make vmname = vmname_temp
+
+vmname = $(strip $(patsubst %_blackbox, %, $(vmname_temp)))
+
 viname = TOP/v
 
 # Derating the clock period for DC

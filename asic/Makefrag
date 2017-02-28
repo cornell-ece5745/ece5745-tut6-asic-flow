@@ -67,10 +67,10 @@ cells_dir = $(BARE_PKGS_GLOBAL_ROOT)/noarch/$(cells)
 # This way you can just set the "design" make variable to push a specific
 # design through the flow.
 
-design = sort-unit
+design = tut9-pmx-vvadd
 
 #-------------------------------------------------------------------------
-# Tutorial Designs
+# Tutorial 6 Designs
 #-------------------------------------------------------------------------
 
 # Sort Unit
@@ -87,6 +87,36 @@ ifeq ($(design),gcd-unit)
   clock_period  = 2.0
   vsrc          = GcdUnitRTL_0x4d0fc71ead8d3d9e.v
   vcd           = gcd-rtl-random.verilator1.vcd
+endif
+
+#-------------------------------------------------------------------------
+# Tutorial 9 Designs
+#-------------------------------------------------------------------------
+
+# vvadd accelerator in isolation
+
+ifeq ($(design),tut9-vvadd-xcel)
+  clock_period  = 2.0
+  vsrc          = VvaddXcelPRTL_0x5ebd4b23a268a517.v
+  vcd           = vvadd-xcel-rtl-multiple.verilator1.vcd
+endif
+
+# processor plus null accelerator
+
+ifeq ($(design),tut9-pmx-null)
+  clock_period  = 2.0
+  vsrc          = ProcMemXcel_null_rtl_blackbox.v
+  vcd           = pmx-sim-null-rtl-ubmark-vvadd.verilator1.vcd
+  srams         = SRAM_128x256_1P SRAM_32x256_1P
+endif
+
+# processor plus vvadd accelerator
+
+ifeq ($(design),tut9-pmx-vvadd)
+  clock_period  = 2.0
+  vsrc          = ProcMemXcel_vvadd_rtl_blackbox.v
+  vcd           = pmx-sim-vvadd-rtl-ubmark-vvadd-xcel.verilator1.vcd
+  srams         = SRAM_128x256_1P SRAM_32x256_1P
 endif
 
 #-------------------------------------------------------------------------
@@ -147,6 +177,17 @@ ifeq ($(design),lab1-imul-8stage)
   clock_period  = 10.0
   vsrc          = IntMulNstageRTL_8stage.v
   vcd           = imul-rtl-8stage-small.verilator1.vcd
+endif
+
+#-------------------------------------------------------------------------
+# Lab 2 Designs
+#-------------------------------------------------------------------------
+
+ifeq ($(design),lab2-pmx-sort)
+  clock_period  = 2.0
+  vsrc          = ProcMemXcel_sort_rtl_blackbox.v
+  vcd           = pmx-sim-sort-rtl-ubmark-sort-xcel.verilator1.vcd
+  srams         = SRAM_128x256_1P SRAM_32x256_1P
 endif
 
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

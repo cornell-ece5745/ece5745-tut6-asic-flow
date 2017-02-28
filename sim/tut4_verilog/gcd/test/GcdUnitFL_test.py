@@ -15,6 +15,10 @@ from pclib.test import TestSource, TestSink
 from tut4_verilog.gcd.GcdUnitFL  import GcdUnitFL
 from tut4_verilog.gcd.GcdUnitMsg import GcdUnitReqMsg
 
+# To ensure reproducible testing
+
+random.seed(0xdeadbeef)
+
 #-------------------------------------------------------------------------
 # TestHarness
 #-------------------------------------------------------------------------
@@ -99,12 +103,12 @@ for i in xrange(20):
 #-------------------------------------------------------------------------
 
 test_case_table = mk_test_case_table([
-  (               "msgs       src_delay sink_delay"),
-  [ "basic_0x0",  basic_msgs, 0,        0          ],
-  [ "basic_5x0",  basic_msgs, 5,        0          ],
-  [ "basic_0x5",  basic_msgs, 0,        5          ],
-  [ "basic_3x9",  basic_msgs, 3,        9          ],
-  [ "random_3x9", basic_msgs, 3,        9          ],
+  (               "msgs        src_delay sink_delay"),
+  [ "basic_0x0",  basic_msgs,  0,        0          ],
+  [ "basic_5x0",  basic_msgs,  5,        0          ],
+  [ "basic_0x5",  basic_msgs,  0,        5          ],
+  [ "basic_3x9",  basic_msgs,  3,        9          ],
+  [ "random_3x9", random_msgs, 3,        9          ],
 ])
 
 #-------------------------------------------------------------------------

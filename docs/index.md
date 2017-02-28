@@ -89,8 +89,9 @@ available to you on the [public course
 webpage](http://www.csl.cornell.edu/courses/ece5745/syndocs). The
 username/password was distributed during lecture.
 
-You should start by cloning the tutorial repository from GitHub. Access
-an `ecelinux` machine and use the following commands:
+The first step is to source the setup script, clone this repository from
+GitHub, and define an environment variable to keep track of the top
+directory for the project.
 
 ```
  % source setup-ece5745.sh
@@ -703,8 +704,10 @@ various modules on the amoeba plot:
  - Click `OK` in the pop up
  - Click checkmark and apply to show just one component
 
-Another very useful feature is to highlight the critical path on the
-amoeba plot using the following steps:
+You can also choose _Color Specific Hierarchical Cells" to select various
+modules at different levels of the hierarchy to highlight. Another very
+useful feature is to highlight the critical path on the amoeba plot using
+the following steps:
 
  - Choose `Timing > New Timing Analysis Window` from the menu
  - Focus on `Select Paths` window, click `OK`
