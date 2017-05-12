@@ -53,6 +53,7 @@
 //------------------------------------------------------------------------
 // Memory Request Struct: Using a packed struct to represent the message
 //------------------------------------------------------------------------
+
 typedef struct packed {
   logic [2:0]  type_;
   logic [7:0]  opaque;
@@ -60,6 +61,14 @@ typedef struct packed {
   logic [1:0]  len;
   logic [31:0] data;
 } mem_req_4B_t;
+
+typedef struct packed {
+  logic [2:0]  type_;
+  logic [7:0]  opaque;
+  logic [31:0] addr;
+  logic [2:0]  len;
+  logic [63:0] data;
+} mem_req_8B_t;
 
 typedef struct packed {
   logic [2:0]  type_;
@@ -127,10 +136,10 @@ module vc_MemReqMsg4BTrace
       type_str = "xx";
     else begin
       case ( msg.type_ )
-        c_read     : type_str = "rd";
-        c_write    : type_str = "wr";
+        c_read       : type_str = "rd";
+        c_write      : type_str = "wr";
         c_write_init : type_str = "wn";
-        default    : type_str = "??";
+        default      : type_str = "??";
       endcase
     end
 
@@ -146,6 +155,80 @@ module vc_MemReqMsg4BTrace
       if ( type_ == c_read ) begin
         $sformat( str, "%s:%x:%x %s", type_str, msg.opaque, msg.addr,
                   {8{" "}} );
+      end
+      else
+        $sformat( str, "%s:%x:%x:%x", type_str, msg.opaque, msg.addr, msg.data );
+    end
+
+    // Trace with val/rdy signals
+
+    vc_trace.append_val_rdy_str( trace_str, val, rdy, str );
+
+  end
+  `VC_TRACE_END
+
+endmodule
+
+module vc_MemReqMsg8BTrace
+(
+  input logic         clk,
+  input logic         reset,
+  input logic         val,
+  input logic         rdy,
+  input mem_req_8B_t  msg
+);
+
+  logic [2:0]   type_;
+  assign type_  = msg.type_;
+  logic [7:0]   opaque;
+  assign opaque = msg.opaque;
+  logic [31:0]  addr;
+  assign addr   = msg.addr;
+  logic [2:0]   len;
+  assign len    = msg.len;
+  logic [63:0]  data;
+  assign data   = msg.data;
+
+  // Short names
+
+  localparam c_msg_nbits  = $bits(mem_req_8B_t);
+  localparam c_read       = `VC_MEM_REQ_MSG_TYPE_READ;
+  localparam c_write      = `VC_MEM_REQ_MSG_TYPE_WRITE;
+  localparam c_write_init = `VC_MEM_REQ_MSG_TYPE_WRITE_INIT;
+
+  // Line tracing
+
+  logic [8*2-1:0] type_str;
+  logic [`VC_TRACE_NBITS-1:0] str;
+
+  `VC_TRACE_BEGIN
+  begin
+
+    // Convert type into a string
+
+    if ( msg.type_ === `VC_MEM_REQ_MSG_TYPE_X )
+      type_str = "xx";
+    else begin
+      case ( msg.type_ )
+        c_read       : type_str = "rd";
+        c_write      : type_str = "wr";
+        c_write_init : type_str = "wn";
+        default      : type_str = "??";
+      endcase
+    end
+
+    // Put together the trace string
+
+    if ( vc_trace.level == 1 ) begin
+      $sformat( str, "%s", type_str );
+    end
+    else if ( vc_trace.level == 2 ) begin
+      $sformat( str, "%s:%x", type_str, msg.addr );
+    end
+    else if ( vc_trace.level == 3 ) begin
+      if ( type_ == c_read ) begin
+        $sformat( str, "%s:%x:%x %s", type_str, msg.opaque, msg.addr,
+                  {16{" "}} );
       end
       else
         $sformat( str, "%s:%x:%x:%x", type_str, msg.opaque, msg.addr, msg.data );
@@ -182,10 +265,10 @@ module vc_MemReqMsg16BTrace
 
   // Short names
 
-  localparam c_msg_nbits = $bits(mem_req_16B_t);
-  localparam c_read      = `VC_MEM_REQ_MSG_TYPE_READ;
-  localparam c_write     = `VC_MEM_REQ_MSG_TYPE_WRITE;
-  localparam c_write_init  = `VC_MEM_REQ_MSG_TYPE_WRITE_INIT;
+  localparam c_msg_nbits  = $bits(mem_req_16B_t);
+  localparam c_read       = `VC_MEM_REQ_MSG_TYPE_READ;
+  localparam c_write      = `VC_MEM_REQ_MSG_TYPE_WRITE;
+  localparam c_write_init = `VC_MEM_REQ_MSG_TYPE_WRITE_INIT;
 
   // Line tracing
 
@@ -201,10 +284,10 @@ module vc_MemReqMsg16BTrace
       type_str = "xx";
     else begin
       case ( msg.type_ )
-        c_read     : type_str = "rd";
-        c_write    : type_str = "wr";
+        c_read       : type_str = "rd";
+        c_write      : type_str = "wr";
         c_write_init : type_str = "wn";
-        default    : type_str = "??";
+        default      : type_str = "??";
       endcase
     end
 
@@ -278,6 +361,7 @@ endmodule
 //------------------------------------------------------------------------
 // Memory Request Struct: Using a packed struct to represent the message
 //------------------------------------------------------------------------
+
 typedef struct packed {
   logic [2:0]  type_;
   logic [7:0]  opaque;
@@ -285,6 +369,14 @@ typedef struct packed {
   logic [1:0]  len;
   logic [31:0] data;
 } mem_resp_4B_t;
+
+typedef struct packed {
+  logic [2:0]  type_;
+  logic [7:0]  opaque;
+  logic [1:0]  test;
+  logic [2:0]  len;
+  logic [63:0] data;
+} mem_resp_8B_t;
 
 typedef struct packed {
   logic [2:0]  type_;
@@ -370,6 +462,78 @@ module vc_MemRespMsg4BTrace
       if ( type_ == c_write || type_ == c_write_init ) begin
         $sformat( str, "%s:%x %s", type_str, opaque,
                   {8{" "}} );
+      end
+      else
+        $sformat( str, "%s:%x:%x", type_str, opaque, data );
+    end
+
+    // Trace with val/rdy signals
+
+    vc_trace.append_val_rdy_str( trace_str, val, rdy, str );
+
+  end
+  `VC_TRACE_END
+
+endmodule
+
+module vc_MemRespMsg8BTrace
+(
+  input logic          clk,
+  input logic          reset,
+  input logic          val,
+  input logic          rdy,
+  input mem_resp_8B_t  msg
+);
+
+  // unpack message fields -- makes them visible in gtkwave
+  logic [2:0]   type_;
+  assign type_  = msg.type_;
+  logic [7:0]   opaque;
+  assign opaque = msg.opaque;
+  logic [1:0]   test;
+  assign test   = msg.test;
+  logic [2:0]   len;
+  assign len    = msg.len;
+  logic [63:0]  data;
+  assign data   = msg.data;
+
+  // Short names
+
+  localparam c_msg_nbits  = $bits(mem_resp_8B_t);
+  localparam c_read       = `VC_MEM_RESP_MSG_TYPE_READ;
+  localparam c_write      = `VC_MEM_RESP_MSG_TYPE_WRITE;
+  localparam c_write_init = `VC_MEM_RESP_MSG_TYPE_WRITE_INIT;
+
+  // Line tracing
+
+  logic [8*2-1:0] type_str;
+  logic [`VC_TRACE_NBITS-1:0] str;
+
+  `VC_TRACE_BEGIN
+  begin
+
+    // Convert type into a string
+
+    if ( type_ === `VC_MEM_RESP_MSG_TYPE_X )
+      type_str = "xx";
+    else begin
+      case ( type_ )
+        c_read       : type_str = "rd";
+        c_write      : type_str = "wr";
+        c_write_init : type_str = "wn";
+        default      : type_str = "??";
+      endcase
+    end
+
+    // Put together the trace string
+
+    if ( (vc_trace.level == 1) || (vc_trace.level == 2) ) begin
+      $sformat( str, "%s", type_str );
+    end
+    else if ( vc_trace.level == 3 ) begin
+      if ( type_ == c_write || type_ == c_write_init ) begin
+        $sformat( str, "%s:%x %s", type_str, opaque,
+                  {16{" "}} );
       end
       else
         $sformat( str, "%s:%x:%x", type_str, opaque, data );

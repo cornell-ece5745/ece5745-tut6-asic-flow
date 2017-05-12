@@ -597,7 +597,7 @@ manually. Note that if the path group containg the critical path was
 `ideal_clock1` then you would search for `Path Group: ideal_clock1`
 instead.
 
-You can view the area report like this.
+You can view the area report like this:
 
 ```
  % cd $TOPDIR/asic/icc-par
@@ -612,11 +612,11 @@ You can view the area report like this.
  Total cell area:                  4884.480021
  Total area:                       5083.795291
 
-                    Global       Local
-                    Cell Area    Cell Area
-                    ----------   ----------------
- Hierarchical cell  Abs                 Non    Black-
-                    Total  %     Comb   Comb   boxes
+                    Global      Local
+                    Cell Area   Cell Area
+                    ----------  ------------------
+ Hierarchical cell  Abs                Non    Black-
+                    Total  %    Comb   Comb   boxes
  ------------------ ------ ---- ------ ------ ----  -------------------------------
  SortUnitStructRTL  4884.4  100  546.5    0.0  0.0  SortUnitStructRTL
  elm_S0S1_000        199.0  4.1    0.0  199.0  0.0  Reg_0x45f1552f10c5f05d_7
@@ -766,7 +766,7 @@ when running the given input (i.e., when using the VCD file specified in
 the `Makefrag`). You can see an overview of the power consumption here:
 
 ```
- % cd $TOPDIR/asic/icc-par
+ % cd $TOPDIR/asic/pt-pwr
  % more current-pt/reports/pt-pwr.report
  ...
                 Internal Switching  Leakage Total
@@ -1280,7 +1280,7 @@ The `Makefrag` entry for the GCD unit looks like this:
 And now we are ready to push the GCD unit through the flow.
 
 ```
- % cd $TOPDIR/asic/dc-syn
+ % cd $TOPDIR/asic/dc-syn  && make
  % cd $TOPDIR/asic/icc-par && make
  % cd $TOPDIR/asic/pt-pwr  && make
 ```

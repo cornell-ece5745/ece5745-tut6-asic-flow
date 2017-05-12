@@ -67,7 +67,7 @@ cells_dir = $(BARE_PKGS_GLOBAL_ROOT)/noarch/$(cells)
 # This way you can just set the "design" make variable to push a specific
 # design through the flow.
 
-design = tut9-pmx-vvadd
+design = sort-unit
 
 #-------------------------------------------------------------------------
 # Tutorial 6 Designs
@@ -87,6 +87,19 @@ ifeq ($(design),gcd-unit)
   clock_period  = 2.0
   vsrc          = GcdUnitRTL_0x4d0fc71ead8d3d9e.v
   vcd           = gcd-rtl-random.verilator1.vcd
+endif
+
+#-------------------------------------------------------------------------
+# Tutorial 8 Designs
+#-------------------------------------------------------------------------
+
+# Example of using SRAMs from PyMTL (ValRdy wrapper of SRAM)
+
+ifeq ($(design),tut8-sram)
+  clock_period  = 2.0
+  vsrc          = SramValRdyRTL_blackbox.v
+  vcd           = sram-rtl-allzero.verilator1.vcd
+  srams         = SRAM_64x64_1P
 endif
 
 #-------------------------------------------------------------------------
@@ -183,11 +196,26 @@ endif
 # Lab 2 Designs
 #-------------------------------------------------------------------------
 
+# processor plus null accelerator
+
+ifeq ($(design),lab2-pmx-null)
+  clock_period  = 2.0
+  vsrc          = ProcMemXcel_null_rtl_blackbox.v
+  vcd           = pmx-sim-null-rtl-ubmark-vvadd.verilator1.vcd
+  srams         = SRAM_128x256_1P SRAM_32x256_1P
+endif
+
 ifeq ($(design),lab2-pmx-sort)
   clock_period  = 2.0
   vsrc          = ProcMemXcel_sort_rtl_blackbox.v
   vcd           = pmx-sim-sort-rtl-ubmark-sort-xcel.verilator1.vcd
   srams         = SRAM_128x256_1P SRAM_32x256_1P
+endif
+
+ifeq ($(design),lab2-sort-xcel)
+  clock_period  = 2.0
+  vsrc          = SortXcelRTL.v
+  vcd           = sort-xcel-rtl-random.verilator1.vcd
 endif
 
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
