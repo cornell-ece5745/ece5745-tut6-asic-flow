@@ -693,7 +693,7 @@ As mentioned in the previous tutorial, we call the resulting plot an
 amoebas. You can zoom in to see how the standard cells were placed and
 how the routing was done. You can turn on an off the visibility of metal
 layers using the panel on the left. You can choose a better color scheme
-by choose the `ece5745` preset. One very useful feature is to view the
+by choose the `saed-90nm` preset. One very useful feature is to view the
 hierarchy and area breakdown. This will be critical for producing
 high-quality amoeba plots. You can use the following steps to highlight
 various modules on the amoeba plot:
@@ -805,7 +805,7 @@ about 6.54pJ per sort.
 You can see a more detailed power breakdown by module here:
 
 ```
- % cd $TOPDIR/asic/icc-par
+ % cd $TOPDIR/asic/pt-pwr
  % more current-pt/reports/pt-pwr.power.avg.max.report
 
                             Int      Switch   Leak     Total
