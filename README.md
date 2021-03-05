@@ -10,11 +10,8 @@ tool. This is obviously very tedious and error prone. An agile hardware
 design flow demands automation to simplify rapidly exploring the area,
 energy, timing design space of one or more designs. Luckily, Synopsys
 tools can be easily scripted using TCL, and even better, the ECE 5745
-staff have already created these TCL scripts along with a set of
-Makefiles to run thee TCL scripts. The ECE 5745 TCL scripts were based on
-the Synopsys reference methodology which is copyrighted by Synopsys. This
-means you _cannot_ take this repo and/or the scripts and make them
-public. Please keep this in mind.
+staff have already created a Python framework for automating the entire
+flow.
 
 You can find the actual tutorial document in the repo here:
 
