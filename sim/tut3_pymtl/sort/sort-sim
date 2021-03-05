@@ -5,18 +5,16 @@
 #
 #  -h --help           Display this message
 #
-#  --impl              {fl,cl,rtl-flat,rtl-struct}
-#  --input <dataset>   {random,sorted-fwd,sorted-rev}
+#  --impl              {cl,rtl-flat,rtl-struct}
+#  --input <dataset>   {random,sorted-fwd,sorted-rev,zeros}
 #  --trace             Display line tracing
 #  --stats             Display statistics
 #  --translate         Translate RTL model to Verilog
 #  --dump-vcd          Dump VCD to sort-<impl>-<input>.vcd
 #
-# Author : Christopher Batten
-# Date   : February 5, 2015
+# Author : Christopher Batten, Shunning Jiang
+# Date   : Jan 23, 2020
 #
-
-from __future__ import print_function
 
 # Hack to add project root to python path
 
@@ -25,7 +23,7 @@ import sys
 
 sim_dir = os.path.dirname( os.path.abspath( __file__ ) )
 while sim_dir:
-  if os.path.exists( sim_dir + os.path.sep + ".pymtl-python-path" ):
+  if os.path.exists( sim_dir + os.path.sep + "pymtl.ini" ):
     sys.path.insert(0,sim_dir)
     break
   sim_dir = os.path.dirname(sim_dir)
@@ -33,13 +31,14 @@ while sim_dir:
 import argparse
 import re
 
-from random            import randint
+from random import randint
 
-from pymtl             import *
-from SortUnitFL        import SortUnitFL
-from SortUnitCL        import SortUnitCL
-from SortUnitFlatRTL   import SortUnitFlatRTL
-from SortUnitStructRTL import SortUnitStructRTL
+from pymtl3                            import *
+from pymtl3.passes.backends.verilog    import *
+from pymtl3.stdlib.test_utils          import config_model_with_cmdline_opts
+from tut3_pymtl.sort.SortUnitCL        import SortUnitCL
+from tut3_pymtl.sort.SortUnitFlatRTL   import SortUnitFlatRTL
+from tut3_pymtl.sort.SortUnitStructRTL import SortUnitStructRTL
 
 #-------------------------------------------------------------------------
 # Command line processing
@@ -63,8 +62,8 @@ def parse_cmdline():
 
   # Additional commane line arguments for the simulator
 
-  p.add_argument( "--impl", default="fl",
-    choices=["fl","cl","rtl-flat","rtl-struct"] )
+  p.add_argument( "--impl", default="rtl-flat",
+    choices=["rtl-flat","rtl-struct"] )
 
   p.add_argument( "--input", default="random",
     choices=["random","sorted-fwd","sorted-rev","zeros"] )
@@ -73,6 +72,7 @@ def parse_cmdline():
   p.add_argument( "--stats",     action="store_true" )
   p.add_argument( "--translate", action="store_true" )
   p.add_argument( "--dump-vcd",  action="store_true" )
+  p.add_argument( "--dump-vtb",  action="store_true" )
 
   opts = p.parse_args()
   if opts.help: p.error()
@@ -91,54 +91,62 @@ def main():
   inputs  = []
 
   if opts.input == "random":
-    for i in xrange(ninputs):
-      inputs.append( [ randint(0,0xff) for i in xrange(4) ] )
+    for i in range(ninputs):
+      inputs.append( [ randint(0,0xff) for i in range(4) ] )
 
   elif opts.input == "sorted-fwd":
-    for i in xrange(ninputs):
-      inputs.append( sorted([ randint(0,0xff) for i in xrange(4) ]) )
+    for i in range(ninputs):
+      inputs.append( sorted([ randint(0,0xff) for i in range(4) ]) )
 
   elif opts.input == "sorted-rev":
-    for i in xrange(ninputs):
-      inputs.append( sorted([ randint(0,0xff) for i in xrange(4) ], reverse=True ) )
+    for i in range(ninputs):
+      inputs.append( sorted([ randint(0,0xff) for i in range(4) ], reverse=True ) )
 
   elif opts.input == "zeros":
-    for i in xrange(ninputs):
+    for i in range(ninputs):
       inputs.append( [0]*4 )
 
   # Instantiate the model
 
   model_impl_dict = {
-    'fl'         : SortUnitFL,
-    'cl'         : SortUnitCL,
+    # 'cl'         : SortUnitCL,
     'rtl-flat'   : SortUnitFlatRTL,
     'rtl-struct' : SortUnitStructRTL,
   }
 
   model = model_impl_dict[ opts.impl ]()
 
-  # VCD dumping
+  # Check if translation is valid
 
-  dump_vcd = ""
-  if opts.dump_vcd:
-    dump_vcd = "sort-" + opts.impl + "-" + opts.input + ".vcd"
+  if opts.translate and not opts.impl.startswith("rtl"):
+    print("\n ERROR: --translate only works with RTL models \n")
+    exit(1)
 
-  model.vcd_file = dump_vcd
-
-  # Translation
-
-  if opts.translate:
-    if opts.impl.startswith("rtl"):
-      model = TranslationTool( model )
-    else:
-      print("\n ERROR: --translate only works with RTL models \n")
+  if opts.dump_vtb:
+    if not opts.translate:
+      print("\n ERROR: --dump-vtb needs --translate \n")
       exit(1)
 
-  # Eleborate model and create simulator
+  # Create VCD filename
 
-  model.elaborate()
-  sim = SimulationTool( model )
-  sim.reset()
+  unique_name = f"sort-{opts.impl}-{opts.input}"
+
+  cmdline_opts = {
+    'dump_vcd': f"{unique_name}" if opts.dump_vcd else '',
+    'dump_vtb': f"{unique_name}" if opts.dump_vtb else '',
+    'test_verilog': 'zeros' if opts.translate else '',
+  }
+
+  # Configure the model
+
+  model = config_model_with_cmdline_opts( model, cmdline_opts, duts=[] )
+
+  # Apply necessary passes
+
+  # Create a simulator
+  model.apply( DefaultPassGroup( linetrace=opts.trace ) )
+
+  model.sim_reset()
 
   # Tick simulator until evaluation is finished
 
@@ -149,26 +157,27 @@ def main():
       counter += 1
 
     if inputs:
-      model.in_val.value = True
+      model.in_val @= 1
       for i,v in enumerate( inputs.pop() ):
-        model.in_[i].value = v
+        model.in_[i] @= v
 
     else:
-      model.in_val.value = False
-      for i in xrange(4):
-        model.in_[i].value = 0
+      model.in_val @= 0
+      for i in range(4):
+        model.in_[i] @= 0
 
+    model.sim_eval_combinational()
     if opts.trace:
-      sim.print_line_trace()
+      model.print_line_trace()
 
-    sim.cycle()
+    model.sim_tick()
 
   # Report various statistics
 
   if opts.stats:
     print()
-    print( "num_cycles          = {}".format( sim.ncycles ) )
-    print( "num_cycles_per_sort = {:1.2f}".format( sim.ncycles/(1.0*ninputs) ) )
+    print( "num_cycles          = {}".format( model.sim_cycle_count() ) )
+    print( "num_cycles_per_sort = {:1.2f}".format( model.sim_cycle_count()/(1.0*ninputs) ) )
 
 main()
 

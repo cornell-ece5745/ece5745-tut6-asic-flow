@@ -11,7 +11,7 @@
 language: python
 
 python:
- - "2.7"
+ - "3.7"
 
 #------------------------------------------------------------------------
 # install dependencies
@@ -21,16 +21,17 @@ install:
 
  # Install verilator
 
- - git clone https://github.com/cornell-brg/verilator-travisci-cache.git
- - tar xfz verilator-travisci-cache/verilator-travis-3.876.tar.gz
- - export VERILATOR_ROOT=${PWD}/verilator-3.876
- - export PATH=${VERILATOR_ROOT}/bin:$PATH
- - export PYMTL_VERILATOR_INCLUDE_DIR=${VERILATOR_ROOT}/include
+ - wget https://github.com/cornell-brg/verilator-travisci-cache/raw/master/verilator-travis-4.026.tar.gz
+ - tar -C ${HOME} -xzf verilator-travis-4.026.tar.gz
+ - export VERILATOR_ROOT=${HOME}/verilator
+ - export PATH=${VERILATOR_ROOT}/bin:${PATH}
+ - export PYMTL_VERILATOR_INCLUDE_DIR=${VERILATOR_ROOT}/share/verilator/include
  - verilator --version
 
  # Install PyMTL
-
- - pip -q install git+https://github.com/cornell-brg/pymtl.git
+ - pip install -U pip
+ - pip install -U hypothesis
+ - pip install -U git+https://github.com/cornell-brg/pymtl3.git@spring20-ece5745
  - pip list
 
 #------------------------------------------------------------------------

@@ -2,11 +2,10 @@
 # GCD Unit CL Model
 #=========================================================================
 
-from pymtl      import *
-from pclib.ifcs import InValRdyBundle, OutValRdyBundle, valrdy_to_str
-from pclib.cl   import InValRdyQueueAdapter, OutValRdyQueueAdapter
+from pymtl3      import *
+from pymtl3.stdlib import stream
 
-from GcdUnitMsg import GcdUnitReqMsg
+from .GcdUnitMsg import GcdUnitMsgs
 
 #-------------------------------------------------------------------------
 # gcd
@@ -15,8 +14,7 @@ from GcdUnitMsg import GcdUnitReqMsg
 # common denomiator, but also to estimate the number of cycles a simple
 # FSM-based GCD unit might take.
 
-def gcd( a, b ):
-
+def gcd_cl( a, b ):
   ncycles = 0
   while True:
     ncycles += 1
@@ -31,52 +29,48 @@ def gcd( a, b ):
 # GcdUnitCL
 #-------------------------------------------------------------------------
 
-class GcdUnitCL( Model ):
+class GcdUnitCL( Component ):
 
   # Constructor
 
-  def __init__( s ):
+  def construct( s ):
 
     # Interface
 
-    s.req    = InValRdyBundle  ( GcdUnitReqMsg() )
-    s.resp   = OutValRdyBundle ( Bits(16)        )
+    s.recv = stream.ifcs.RecvIfcRTL(GcdUnitMsgs.req)
+    s.send = stream.ifcs.SendIfcRTL(GcdUnitMsgs.resp)
 
-    # Adapters
+    # Queues
 
-    s.req_q  = InValRdyQueueAdapter  ( s.req  )
-    s.resp_q = OutValRdyQueueAdapter ( s.resp )
+    s.req_q  = stream.RecvQueueAdapter(GcdUnitMsgs.req) # gives a deq method to call
+    s.resp_q = stream.SendQueueAdapter(GcdUnitMsgs.resp) # gives a send method to call
+
+    s.recv //= s.req_q.recv
+    s.send //= s.resp_q.send
 
     # Member variables
 
-    s.result  = 0
+    s.result  = None
     s.counter = 0
 
-    # Concurrent block
+    # CL block
 
-    @s.tick_cl
+    @update_once
     def block():
 
-      # Tick the queue adapters
-
-      s.req_q.xtick()
-      s.resp_q.xtick()
-
-      # Handle delay to model the gcd unit latency
-
-      if s.counter > 0:
-        s.counter -= 1
-        if s.counter == 0:
+      if s.result is not None:
+        # Handle delay to model the gcd unit latency
+        if s.counter > 0:
+          s.counter -= 1
+        elif s.resp_q.enq.rdy():
           s.resp_q.enq( s.result )
+          s.result = None
 
-      # If we have a new message and the output queue is not full
-
-      elif not s.req_q.empty() and not s.resp_q.full():
-        req_msg = s.req_q.deq()
-        s.result,s.counter = gcd( req_msg.a, req_msg.b )
+      elif s.req_q.deq.rdy():
+        msg = s.req_q.deq()
+        s.result, s.counter = gcd_cl(msg.a, msg.b)
 
   # Line tracing
 
   def line_trace( s ):
-    return "{}(){}".format( s.req, s.resp )
-
+    return f"{s.recv}({s.counter:^4}){s.send}"

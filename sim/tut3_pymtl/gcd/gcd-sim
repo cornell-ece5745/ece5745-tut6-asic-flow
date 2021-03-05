@@ -5,18 +5,16 @@
 #
 #  -h --help           Display this message
 #
-#  --impl              {fl,cl,rtl}
+#  --impl              {cl,rtl}
 #  --input <dataset>   {random,small,zeros}
 #  --trace             Display line tracing
 #  --stats             Display statistics
 #  --translate         Translate RTL model to Verilog
 #  --dump-vcd          Dump VCD to gcd-<impl>-<input>.vcd
 #
-# Author : Christopher Batten
-# Date   : February 5, 2015
+# Author : Christopher Batten, Shunning Jiang
+# Date   : Feb 13, 2021
 #
-
-from __future__ import print_function
 
 # Hack to add project root to python path
 
@@ -25,7 +23,7 @@ import sys
 
 sim_dir = os.path.dirname( os.path.abspath( __file__ ) )
 while sim_dir:
-  if os.path.exists( sim_dir + os.path.sep + ".pymtl-python-path" ):
+  if os.path.exists( sim_dir + os.path.sep + "pymtl.ini" ):
     sys.path.insert(0,sim_dir)
     break
   sim_dir = os.path.dirname(sim_dir)
@@ -33,17 +31,20 @@ while sim_dir:
 import argparse
 import re
 
-from random              import randint
-from fractions           import gcd
+from random import randint
+from math   import gcd
 
-from pymtl               import *
+from pymtl3 import *
+from pymtl3.stdlib.test_utils import config_model_with_cmdline_opts
 
-from GcdUnitFL           import GcdUnitFL
-from GcdUnitCL           import GcdUnitCL
-from GcdUnitRTL          import GcdUnitRTL
+from tut3_pymtl.gcd.GcdUnitCL  import GcdUnitCL
+from tut3_pymtl.gcd.GcdUnitRTL import GcdUnitRTL
+from tut3_pymtl.gcd.GcdUnitMsg import GcdUnitReqMsg
 
-from test.GcdUnitFL_test import TestHarness
+from test.GcdUnitCL_test import TestHarness
 
+from random import seed
+seed(0xdeadbeef)
 #-------------------------------------------------------------------------
 # Command line processing
 #-------------------------------------------------------------------------
@@ -66,8 +67,8 @@ def parse_cmdline():
 
   # Additional commane line arguments for the simulator
 
-  p.add_argument( "--impl", default="fl",
-    choices=["fl","cl","rtl"] )
+  p.add_argument( "--impl", default="rtl",
+    choices=["cl","rtl"] )
 
   p.add_argument( "--input", default="random",
     choices=["random","small","zeros"] )
@@ -76,6 +77,7 @@ def parse_cmdline():
   p.add_argument( "--stats",     action="store_true" )
   p.add_argument( "--translate", action="store_true" )
   p.add_argument( "--dump-vcd",  action="store_true" )
+  p.add_argument( "--dump-vtb",  action="store_true" )
 
   opts = p.parse_args()
   if opts.help: p.error()
@@ -92,29 +94,29 @@ def main():
 
   ninputs = 100
   inputs  = []
+  seed(0xdeadbeef)
 
   if opts.input == "random":
-    for i in xrange(ninputs):
-      a = Bits( 16, randint(0,0xffff) )
-      b = Bits( 16, randint(0,0xffff) )
-      c = Bits( 16, gcd( a, b ) )
-      inputs.extend( [ concat( a, b ), c ] )
+    for i in range(ninputs):
+      a = b16( randint(0,0xffff) )
+      b = b16( randint(0,0xffff) )
+      c = b16( gcd( a, b ) )
+      inputs.extend( [ GcdUnitReqMsg( a, b ), c ] )
 
   elif opts.input == "small":
-    for i in xrange(ninputs):
-      a = Bits( 16, randint(0,0xff)    )
-      b = Bits( 16, a * randint(0,0xf) )
-      c = Bits( 16, gcd( a, b )        )
-      inputs.extend( [ concat( a, b ), c ] )
+    for i in range(ninputs):
+      a = b16( randint(0,0xff)    )
+      b = b16( a * randint(0,0xf) )
+      c = b16( gcd( a, b )        )
+      inputs.extend( [ GcdUnitReqMsg( a, b ), c ] )
 
   elif opts.input == "zeros":
-    for i in xrange(ninputs):
-      inputs.extend( [ Bits(32,0), Bits(16,0) ] )
+    for i in range(ninputs):
+      inputs.extend( [ GcdUnitReqMsg( 0, 0 ), b16(0) ] )
 
   # Determine which model to use in the simulator
 
   model_impl_dict = {
-    'fl'  : GcdUnitFL,
     'cl'  : GcdUnitCL,
     'rtl' : GcdUnitRTL,
   }
@@ -125,50 +127,54 @@ def main():
     print("\n ERROR: --translate only works with RTL models \n")
     exit(1)
 
-  # Create VCD filename
-
-  dump_vcd = ""
-  if opts.dump_vcd:
-    dump_vcd = "gcd-" + opts.impl + "-" + opts.input + ".vcd"
-
   # Create test harness (we can reuse the harness from unit testing)
 
-  th = TestHarness( model_impl_dict[ opts.impl ],
-                    inputs[::2], inputs[1::2], 0, 0,
-                    dump_vcd, opts.translate )
+  th = TestHarness( model_impl_dict[ opts.impl ]() )
 
-  # Setup the test harness
+  th.set_param("top.src.construct",  msgs=inputs[::2] )
+  th.set_param("top.sink.construct", msgs=inputs[1::2] )
 
-  th.vcd_file = dump_vcd
-  th.elaborate()
+  # Create VCD filename
+
+  unique_name = f"gcd-{opts.impl}-{opts.input}"
+
+  cmdline_opts = {
+    'dump_vcd': f"{unique_name}" if opts.dump_vcd else '',
+    'dump_vtb': f"{unique_name}" if opts.dump_vtb else '',
+    'test_verilog': 'zeros' if opts.translate else '',
+  }
+
+  # Configure the test harness component
+
+  config_model_with_cmdline_opts( th, cmdline_opts, duts=['gcd'] )
+
+  # Apply necessary passes
 
   # Create a simulator
-
-  sim = SimulationTool( th )
+  th.apply( DefaultPassGroup( linetrace=opts.trace ) )
 
   # Reset test harness
 
-  sim.reset()
+  th.sim_reset()
 
   # Run simulation
 
   while not th.done():
-
     if opts.trace:
-      sim.print_line_trace()
+      th.print_line_trace()
 
-    sim.cycle()
+    th.sim_tick()
 
   # Extra ticks to make VCD easier to read
 
-  sim.cycle()
-  sim.cycle()
-  sim.cycle()
+  th.sim_tick()
+  th.sim_tick()
+  th.sim_tick()
 
   # Display statistics
 
   if opts.stats:
-    print( "num_cycles         = {}".format( sim.ncycles ) )
-    print( "num_cycles_per_gcd = {:1.2f}".format( sim.ncycles/(1.0*ninputs) ) )
+    print( f"num_cycles         = {th.sim_cycle_count()}" )
+    print( f"num_cycles_per_gcd = {th.sim_cycle_count()/(1.0*ninputs):1.2f}" )
 
 main()

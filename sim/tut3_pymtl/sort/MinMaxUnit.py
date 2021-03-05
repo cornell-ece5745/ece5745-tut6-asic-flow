@@ -4,18 +4,18 @@
 # This module takes two inputs, compares them, and outputs the larger
 # via the "max" output port and the smaller via the "min" output port.
 
-from pymtl import *
+from pymtl3 import *
 
-class MinMaxUnit( Model ):
+class MinMaxUnit( Component ):
 
   # Constructor
 
-  def __init__( s, nbits=8 ):
+  def construct( s, nbits ):
 
-    s.in0     = InPort  ( nbits )
-    s.in1     = InPort  ( nbits )
-    s.out_min = OutPort ( nbits )
-    s.out_max = OutPort ( nbits )
+    s.in0     = InPort ( nbits )
+    s.in1     = InPort ( nbits )
+    s.out_min = OutPort( nbits )
+    s.out_max = OutPort( nbits )
 
     # ''' TUTORIAL TASK ''''''''''''''''''''''''''''''''''''''''''''''''''
     # This model is incomplete. As part of the tutorial you will insert
