@@ -63,7 +63,7 @@ def parse_cmdline():
   # Additional commane line arguments for the simulator
 
   p.add_argument( "--impl", default="rtl-flat",
-    choices=["rtl-flat","rtl-struct"] )
+    choices=["cl","rtl-flat","rtl-struct"] )
 
   p.add_argument( "--input", default="random",
     choices=["random","sorted-fwd","sorted-rev","zeros"] )
@@ -109,7 +109,7 @@ def main():
   # Instantiate the model
 
   model_impl_dict = {
-    # 'cl'         : SortUnitCL,
+    'cl'         : SortUnitCL,
     'rtl-flat'   : SortUnitFlatRTL,
     'rtl-struct' : SortUnitStructRTL,
   }
@@ -167,8 +167,6 @@ def main():
         model.in_[i] @= 0
 
     model.sim_eval_combinational()
-    if opts.trace:
-      model.print_line_trace()
 
     model.sim_tick()
 

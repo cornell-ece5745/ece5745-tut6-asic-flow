@@ -4,9 +4,9 @@
 
 import pytest
 
-from random             import randint
+from random import randint
 
-from pymtl3             import *
+from pymtl3 import *
 from pymtl3.stdlib.test_utils import run_test_vector_sim
 from ..MinMaxUnit        import MinMaxUnit
 
@@ -15,7 +15,7 @@ from ..MinMaxUnit        import MinMaxUnit
 #-------------------------------------------------------------------------
 
 def test_basic( cmdline_opts ):
-  run_test_vector_sim( MinMaxUnit(Bits8), [
+  run_test_vector_sim( MinMaxUnit(8), [
     ('in0   in1   out_min* out_max*'),
     [ 0x00, 0x00, 0x00,    0x00     ],
     [ 0x04, 0x03, 0x03,    0x04     ],

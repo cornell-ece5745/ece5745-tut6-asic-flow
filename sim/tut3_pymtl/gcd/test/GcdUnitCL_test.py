@@ -5,15 +5,12 @@
 import pytest
 
 from pymtl3 import *
-from pymtl3.stdlib import stream
-from pymtl3.stdlib.test_utils import mk_test_case_table, run_sim
-
-from tut3_pymtl.gcd.GcdUnitCL import gcd_cl, GcdUnitCL
-from tut3_pymtl.gcd.GcdUnitMsg import GcdUnitMsgs
+from pymtl3.stdlib.test_utils import run_sim
+from ..GcdUnitCL import gcd_cl, GcdUnitCL
 
 # Reuse cases from FL tests
 
-from .GcdUnitFL_test import basic_cases, random_cases
+from .GcdUnitFL_test import TestHarness, test_case_table
 
 #-------------------------------------------------------------------------
 # test_gcd_cl
@@ -31,59 +28,6 @@ def test_gcd_cl_calc():
   assert gcd_cl( 75, 45 ) == ( 15,    8       )
   assert gcd_cl( 36, 96 ) == ( 12,    10      )
 
-#-------------------------------------------------------------------------
-# TestHarness
-#-------------------------------------------------------------------------
-
-class TestHarness( Component ):
-
-  def construct( s, gcd ):
-
-    # Instantiate models
-
-    s.src  = stream.SourceRTL( GcdUnitMsgs.req )
-    s.sink = stream.SinkRTL( GcdUnitMsgs.resp )
-    s.gcd = gcd
-
-    # Connect
-
-    s.src.send //= s.gcd.recv
-    s.gcd.send //= s.sink.recv
-
-  def done( s ):
-    return s.src.done() and s.sink.done()
-
-  def line_trace( s ):
-    return s.src.line_trace() + " > " + s.gcd.line_trace() + " > " + s.sink.line_trace()
-
-#-------------------------------------------------------------------------
-# Test Case: basic
-#-------------------------------------------------------------------------
-
-basic_msgs = []
-for a, b, result in basic_cases:
-  basic_msgs.extend( [GcdUnitMsgs.req(a, b), GcdUnitMsgs.resp( result )] )
-
-#-------------------------------------------------------------------------
-# Test Case: random
-#-------------------------------------------------------------------------
-
-random_msgs = []
-for a, b, result in random_cases:
-  random_msgs.extend( [GcdUnitMsgs.req(a, b), GcdUnitMsgs.resp( result )] )
-
-#-------------------------------------------------------------------------
-# Test Case Table
-#-------------------------------------------------------------------------
-
-test_case_table = mk_test_case_table([
-  (               "msgs        src_delay  sink_delay"),
-  [ "basic_0x0",  basic_msgs,  0,         0,         ],
-  [ "basic_5x0",  basic_msgs,  5,         0,         ],
-  [ "basic_0x5",  basic_msgs,  0,         5,         ],
-  [ "basic_3x9",  basic_msgs,  3,         9,         ],
-  [ "random_3x9", random_msgs, 3,         9,         ],
-])
 #-------------------------------------------------------------------------
 # Test cases
 #-------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 #=========================================================================
-# flow_tut6.py
+# flow_tut6_sort.py
 #=========================================================================
 
 import os
@@ -12,27 +12,29 @@ from pyhflow.steps.cdns_innovus_pnr import PlaceAndRoute
 from pyhflow.steps.snps_pt_pwr import PowerAnalysis
 from pyhflow.steps.summary import Summary
 
+adk_dir    = os.environ['ADK_PKGS']
+adk_config = f'{adk_dir}/freepdk-45nm/stdview/adk-stdview.yml'
+
 #-------------------------------------------------------------------------
 # Flow parameters
 #-------------------------------------------------------------------------
 
-adk_dir    = os.environ['ADK_PKGS']
-adk_config = f'{adk_dir}/freepdk-45nm/stdview/adk-stdview.yml'
-
-tut_dir = '../../../sim'
+build_dir = '../../../sim/build'
 files = [
-  f'{tut_dir}/build/SortUnitStructRTL__nbits_8__pickled.v',
-  f'{tut_dir}/build/sort-rtl-struct-random.verilator1.vcd',
+  f'{build_dir}/SortUnitStructRTL__nbits_8__pickled.v',
+  f'{build_dir}/sort-rtl-struct-random.verilator1.vcd',
 ]
+top_name   = 'SortUnitStructRTL__nbits_8'
+clk_period = 1.0 #ns
 
 #-------------------------------------------------------------------------
 # Instantiate step instances
 #-------------------------------------------------------------------------
 
-block    = Block( files, 'SortUnitStructRTL__nbits_8', clk_period=1.0, name='block' )
+block    = Block( files, top_name, clk_period=clk_period, name='block' )
 getadk   = ADK( adk_config, name='adk' )
 vcd2saif = Vcd2Saif( name='vcd2saif' )
-synth    = Synthesis( name='synthesis' )
+synth    = Synthesis( name='synth' )
 pnr      = PlaceAndRoute( name='pnr' )
 pwr      = PowerAnalysis( name='pwr' )
 summary  = Summary( name='summary' )

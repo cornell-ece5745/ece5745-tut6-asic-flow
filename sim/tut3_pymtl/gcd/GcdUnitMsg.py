@@ -14,6 +14,8 @@ class GcdUnitReqMsg:
   a: Bits16
   b: Bits16
 
+# Usage: GcdUnitMsgs.req, GcdUnitMsgs.resp
+
 class GcdUnitMsgs:
   req  = GcdUnitReqMsg
   resp = Bits16

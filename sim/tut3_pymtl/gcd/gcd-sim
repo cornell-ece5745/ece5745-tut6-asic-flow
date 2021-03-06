@@ -41,7 +41,7 @@ from tut3_pymtl.gcd.GcdUnitCL  import GcdUnitCL
 from tut3_pymtl.gcd.GcdUnitRTL import GcdUnitRTL
 from tut3_pymtl.gcd.GcdUnitMsg import GcdUnitReqMsg
 
-from test.GcdUnitCL_test import TestHarness
+from test.GcdUnitFL_test import TestHarness
 
 from random import seed
 seed(0xdeadbeef)
@@ -160,9 +160,6 @@ def main():
   # Run simulation
 
   while not th.done():
-    if opts.trace:
-      th.print_line_trace()
-
     th.sim_tick()
 
   # Extra ticks to make VCD easier to read

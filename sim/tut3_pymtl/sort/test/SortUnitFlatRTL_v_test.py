@@ -2,18 +2,17 @@
 # SortUnitFlatRTL_v_test
 #=========================================================================
 
-from pymtl3                         import *
+from pymtl3 import *
 from pymtl3.passes.backends.verilog import *
-from pymtl3.stdlib.test_utils       import config_model_with_cmdline_opts
-from ..SortUnitFlatRTL               import SortUnitFlatRTL
+from pymtl3.stdlib.test_utils import config_model_with_cmdline_opts
+
+from ..SortUnitFlatRTL import SortUnitFlatRTL
 
 def test_verilate( cmdline_opts ):
 
-  # Conflat the model
+  # Instantiate and configure the model with dump_vcd and test_verilog flags
 
   model = SortUnitFlatRTL(8)
-
-  # Configure the model
 
   model = config_model_with_cmdline_opts( model, cmdline_opts, duts=[] ) # use model itself
 
@@ -33,7 +32,7 @@ def test_verilate( cmdline_opts ):
     model.sim_eval_combinational()
 
     assert model.out_val == out_val
-    if ( out_val ):
+    if out_val:
       for i,v in enumerate( out ):
         assert model.out[i] == v
 

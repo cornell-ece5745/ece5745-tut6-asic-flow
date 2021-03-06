@@ -8,28 +8,43 @@ import random
 from math  import gcd
 
 from pymtl3  import *
-from pymtl3.stdlib.test_utils import mk_test_case_table
+from pymtl3.stdlib.test_utils import mk_test_case_table, run_sim
 
-from tut3_pymtl.gcd.GcdUnitFL  import gcd_fl
+from pymtl3.stdlib import stream
+from tut3_pymtl.gcd.GcdUnitFL  import GcdUnitFL
+from tut3_pymtl.gcd.GcdUnitMsg import GcdUnitMsgs
 
 # To ensure reproducible testing
 
 random.seed(0xdeadbeef)
 
-def test_gcd_fl():
-  #           a   b         result
-  assert gcd_fl( 0,  0  ) == ( 0      )
-  assert gcd_fl( 1,  0  ) == ( 1      )
-  assert gcd_fl( 0,  1  ) == ( 1      )
-  assert gcd_fl( 5,  5  ) == ( 5      )
-  assert gcd_fl( 15, 5  ) == ( 5      )
-  assert gcd_fl( 5,  15 ) == ( 5      )
-  assert gcd_fl( 7,  13 ) == ( 1      )
-  assert gcd_fl( 75, 45 ) == ( 15    )
-  assert gcd_fl( 36, 96 ) == ( 12    )
+#-------------------------------------------------------------------------
+# TestHarness
+#-------------------------------------------------------------------------
+
+class TestHarness( Component ):
+
+  def construct( s, gcd ):
+
+    # Instantiate models
+
+    s.src  = stream.SourceRTL( GcdUnitMsgs.req )
+    s.sink = stream.SinkRTL( GcdUnitMsgs.resp )
+    s.gcd = gcd
+
+    # Connect
+
+    s.src.send //= s.gcd.recv
+    s.gcd.send //= s.sink.recv
+
+  def done( s ):
+    return s.src.done() and s.sink.done()
+
+  def line_trace( s ):
+    return s.src.line_trace() + " > " + s.gcd.line_trace() + " > " + s.sink.line_trace()
 
 #-------------------------------------------------------------------------
-# Test cases
+# Test Case: basic
 #-------------------------------------------------------------------------
 
 basic_cases = [
@@ -46,6 +61,10 @@ basic_cases = [
   ( 0xffff, 0x00ff, 0xff ),
 ]
 
+basic_msgs = []
+for a, b, result in basic_cases:
+  basic_msgs.extend( [GcdUnitMsgs.req(a, b), GcdUnitMsgs.resp( result )] )
+
 #-------------------------------------------------------------------------
 # Test Case: random
 #-------------------------------------------------------------------------
@@ -57,19 +76,39 @@ for i in range(30):
   c = gcd( a, b )
   random_cases.append( ( a, b, c ) )
 
+random_msgs = []
+for a, b, result in random_cases:
+  random_msgs.extend( [GcdUnitMsgs.req(a, b), GcdUnitMsgs.resp( result )] )
+
 #-------------------------------------------------------------------------
 # Test Case Table
 #-------------------------------------------------------------------------
 
 test_case_table = mk_test_case_table([
-  (           "cases      "),
-  [ "basic",  basic_cases, ],
-  [ "random", random_cases ],
+  (               "msgs        src_delay  sink_delay"),
+  [ "basic_0x0",  basic_msgs,  0,         0,         ],
+  [ "basic_5x0",  basic_msgs,  5,         0,         ],
+  [ "basic_0x5",  basic_msgs,  0,         5,         ],
+  [ "basic_3x9",  basic_msgs,  3,         9,         ],
+  [ "random_3x9", random_msgs, 3,         9,         ],
 ])
+#-------------------------------------------------------------------------
+# Test cases
+#-------------------------------------------------------------------------
 
 @pytest.mark.parametrize( **test_case_table )
 def test_gcd_fl( test_params ):
-  print()
-  for a, b, result in test_params.cases:
-    print(f"gcd_fl({b16(a)}, {b16(b)}) = {gcd_fl(b16(a), b16(b))} (ref = {b16(result)})")
-    assert gcd_fl(b16(a), b16(b)) == b16(result)
+
+  th = TestHarness( GcdUnitFL() )
+
+  th.set_param("top.src.construct",
+    msgs=test_params.msgs[::2],
+    initial_delay=test_params.src_delay,
+    interval_delay=test_params.src_delay )
+
+  th.set_param("top.sink.construct",
+    msgs=test_params.msgs[1::2],
+    initial_delay=test_params.sink_delay,
+    interval_delay=test_params.sink_delay )
+
+  run_sim( th )

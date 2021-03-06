@@ -4,32 +4,16 @@
 
 import pytest
 
-from copy               import deepcopy
-from random             import randint
+from copy   import deepcopy
+from random import randint
 
-from pymtl3             import *
+from pymtl3 import *
 from pymtl3.stdlib.test_utils import run_test_vector_sim
+
+from .SortUnitFL_test import header_str, mk_test_vector_table, x, \
+                             tvec_stream, tvec_dups, tvec_sorted, tvec_random
+
 from ..SortUnitFlatRTL   import SortUnitFlatRTL
-
-from .SortUnitFL_test   import tvec_stream, tvec_dups, tvec_sorted, tvec_random
-from .SortUnitCL_test   import mk_test_vector_table
-
-
-#-------------------------------------------------------------------------
-# Syntax helpers
-#-------------------------------------------------------------------------
-
-# We define the header string here since it is so long. Then reference
-# the header string and include a comment to label each of the columns.
-
-header_str = \
-  ( "in_val",   "in_[0]",  "in_[1]",  "in_[2]",  "in_[3]",
-    "out_val*", "out[0]*", "out[1]*", "out[2]*", "out[3]*" )
-
-# We define a global variable 'x' so that we can simply use the x
-# character instead of '?' to indicate don't care reference outputs
-
-x = '?'
 
 #-------------------------------------------------------------------------
 # test_basic

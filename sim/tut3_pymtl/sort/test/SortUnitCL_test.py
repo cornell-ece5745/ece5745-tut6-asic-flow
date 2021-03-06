@@ -4,62 +4,13 @@
 
 import pytest
 
-from copy       import deepcopy
-from random     import randint, seed
-
 from pymtl3      import *
 from pymtl3.stdlib.test_utils import run_test_vector_sim, mk_test_case_table
+
+from .SortUnitFL_test import header_str, mk_test_vector_table, x, \
+                             tvec_stream, tvec_dups, tvec_sorted, tvec_random
+
 from ..SortUnitCL import SortUnitCL
-from .SortUnitFL_test import tvec_stream, tvec_dups, tvec_sorted, tvec_random
-
-# To ensure reproducible testing
-
-seed(0xdeadbeef)
-
-#-------------------------------------------------------------------------
-# Syntax helpers
-#-------------------------------------------------------------------------
-
-# We define the header string here since it is so long. Then reference
-# the header string and include a comment to label each of the columns.
-
-header_str = \
-  ( "in_val",   "in_[0]",  "in_[1]",  "in_[2]",  "in_[3]",
-    "out_val*", "out[0]*", "out[1]*", "out[2]*", "out[3]*" )
-
-# We define a global variable 'x' so that we can simply use the x
-# character instead of '?' to indicate don't care reference outputs
-
-x = '?'
-
-#-------------------------------------------------------------------------
-# mk_test_vector_table
-#-------------------------------------------------------------------------
-
-def mk_test_vector_table( nstages, inputs ):
-
-  # Add initial invalid outputs to the list of output values
-
-  outputs_val = [[0,x,x,x,x]]*nstages
-
-  # Sort inputs and prepend valid bit to each list of inputs/outputs
-
-  inputs_val  = []
-  for input_ in inputs:
-    inputs_val.append( [1] + input_ )
-    outputs_val.append( [1] + deepcopy( sorted(input_) ) )
-
-  # Add final invalid inputs to the list of input values
-
-  inputs_val.extend( [[0,0,0,0,0]]*nstages )
-
-  # Put inputs_val and outputs_val together to make test_vector_table
-
-  test_vector_table = [ header_str ]
-  for input_,output in zip( inputs_val, outputs_val ):
-    test_vector_table.append( input_ + output )
-
-  return test_vector_table
 
 #-------------------------------------------------------------------------
 # test_basic
@@ -96,7 +47,6 @@ test_case_table = mk_test_case_table([
   [ "3stage_sorted", 3,      tvec_sorted  ],
   [ "3stage_random", 3,      tvec_random  ],
 ])
-
 @pytest.mark.parametrize( **test_case_table )
 def test_sort_cl( test_params ):
   nstages = test_params.nstages

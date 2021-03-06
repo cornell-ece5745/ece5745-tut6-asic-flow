@@ -214,24 +214,31 @@ Using Synopsys Design Compiler for Synthesis
 
 All scripts for the ASIC flow are contained within the `asic`
 subdirectory. We will use PyHFlow to drive the ASIC flow, and a
-`flow_tut6.py` that describes the flow. Go into the `asic` subdirectory
-and take a look at the `flow_tut6.py`.
+`flow_tut6_sort.py` that describes the flow. Go into the `asic` subdirectory
+and take a look at the `flow_tut6_sort.py`.
 
 ```
  % cd $TOPDIR/asic
- % less flow_tut6.py
+ % less flow_tut6_sort.py
 ```
 
 The `Block` step sets the path to the source file and some required
 metadata of the flow, such as the top module name and the clock period.
 
 ```
-tut_dir = '../../../sim'
+build_dir = '../../../sim/build'
 files = [
-  f'{tut_dir}/build/SortUnitStructRTL__nbits_8__pickled.v',
-  f'{tut_dir}/build/sort-rtl-struct-random.verilator1.vcd',
+  f'{build_dir}/SortUnitStructRTL__nbits_8__pickled.v',
+  f'{build_dir}/sort-rtl-struct-random.verilator1.vcd',
 ]
-block    = Block( files, 'SortUnitStructRTL__nbits_8', clk_period=1.0 )
+top_name   = 'SortUnitStructRTL__nbits_8'
+clk_period = 1.0 #ns
+
+#-------------------------------------------------------------------------
+# Instantiate step instances
+#-------------------------------------------------------------------------
+
+block    = Block( files, top_name, clk_period=clk_period, name='block' )
 ```
 
 The `files` variable is a list of source files that we want to push
@@ -249,8 +256,8 @@ synthesis step like this:
  % cd $TOPDIR/asic
  % mkdir build
  % cd build
- % pyhflow configure ../flow_tut6.py
- % pyhflow run Synthesis
+ % pyhflow configure ../flow_tut6_sort.py
+ % pyhflow run synth
 ```
 
 You will see pyhflow run some commands, start Synopsys DC, run some TCL
@@ -273,8 +280,8 @@ in the log file like this:
 
 ```
  % cd $TOPDIR/asic/build
- % grep Error Synthesis/dc.log
- % grep Warning Synthesis/dc.log
+ % grep Error synth/dc.log
+ % grep Warning synth/dc.log
 ```
 
 There should be no errors, but there will usually be warnings. The hard
@@ -310,7 +317,7 @@ When the synthesis is completed you can take a look at the resulting
 Verilog gate-level netlist here:
 
 ```
- % cd $TOPDIR/asic/build/Synthesis
+ % cd $TOPDIR/asic/build/synth
  % less outputs/post-synth.v
 ```
 
@@ -324,7 +331,7 @@ However, there is a "resources" report that can be somewhat useful. You
 can view the resources report like this:
 
 ```
- % cd $TOPDIR/asic/build/Synthesis
+ % cd $TOPDIR/asic/build/synth
  % less post_synth.resources.rpt
 
 ****************************************
@@ -397,7 +404,7 @@ We can use `pyhflow` to run Cadence Innovus like this:
 
 ```
  % cd $TOPDIR/asic/build
- % pyhflow run PlaceAndRoute
+ % pyhflow run pnr
 ```
 
 Place-and-route can take significantly longer than synthesis, so be
@@ -408,8 +415,8 @@ you can search the logs to look for errors and/or warnings.
 
 ```
  % cd $TOPDIR/asic/build
- % grep ERROR PlaceAndRoute/*.log
- % grep WARNING PlaceAndRoute/*.log
+ % grep ERROR pnr/*.log
+ % grep WARNING pnr/*.log
 ```
 
 However, usually we catch errors in Synopsys DC and after that we are all
@@ -417,12 +424,12 @@ set. So if you see errors in Cadence Innovus, you might want to go back
 and see if there were any errors in Synopsys DC.
 
 The automated system is also setup to output a bunch of reports in the
-`PlaceAndRoute` directory. You might want to start with the timing
+`pnr` directory. You might want to start with the timing
 summary report. If you take a look that report you will see something
 like this:
 
 ```
- % cd $TOPDIR/asic/build/PlaceAndRoute
+ % cd $TOPDIR/asic/build/pnr
  % less signoff.summary.gz
  ...
 
@@ -476,7 +483,7 @@ critical path, and then look in the corresponding timing report to see
 the critical path like this:
 
 ```
- % cd $TOPDIR/asic/build/PlaceAndRoute
+ % cd $TOPDIR/asic/build/pnr
  % less signoff_Reg2Out.tarpt.gz
  ...
 Path 1: MET Late External Delay Assertion
@@ -551,7 +558,7 @@ manually.
 You can view the area report like this:
 
 ```
- % cd $TOPDIR/asic/build/PlaceAndRoute
+ % cd $TOPDIR/asic/build/pnr
  % less signoff.area.rpt
 
 Hinst Name                 Module Name                         Inst Count           Total Area               Buffer             Inverter        Combinational                 Flop                Latch           Clock Gate                Macro             Physical
@@ -594,7 +601,7 @@ path groups to fine the true cycle time that you should use in your
 analysis.
 
 ```
- % cd $TOPDIR/asic/build/PlaceAndRoute
+ % cd $TOPDIR/asic/build/pnr
  % less summary.txt
 
 #=========================================================================
@@ -616,7 +623,7 @@ the results. You can start the Cadence Innovus GUI to visualize the final
 layout like this:
 
 ```
- % cd $TOPDIR/asic/build/PlaceAndRoute
+ % cd $TOPDIR/asic/build/pnr
  % innovus -64
 ```
 
@@ -662,14 +669,14 @@ gate-level model. We can use `pyhflow` to run Synopsys PT like this:
 
 ```
  % cd $TOPDIR/asic/build
- % pyhflow run PrimeTime
+ % pyhflow run pwr
 ```
 
 We have setup the flow to display the final summary information after
 this step. You can also display it directly like this:
 
 ```
- % cd $TOPDIR/asic/build/PrimeTime
+ % cd $TOPDIR/asic/build/pwr
  % less summary.txt
 
 #=========================================================================
@@ -688,7 +695,7 @@ when running the given input (i.e., when using the VCD file specified in
 the `flow.py`). You can see an overview of the power consumption here:
 
 ```
- % cd $TOPDIR/asic/PrimeTime
+ % cd $TOPDIR/asic/pwr
  % less power.rpt
  ...
                         Internal  Switching  Leakage    Total
@@ -727,7 +734,7 @@ about 1.53pJ per sort.
 You can see a more detailed power breakdown by module here:
 
 ```
- % cd $TOPDIR/asic/PrimeTime
+ % cd $TOPDIR/asic/pwr
  % less power.hierarchy.rpt
 ...
                                       Int      Switch   Leak      Total
@@ -795,38 +802,53 @@ push the sort unit through the flow again with a clock constraint of
  % cd $TOPDIR/asic/build
  % less flow.py
 
-block    = Block( files, 'SortUnitStructRTL__nbits_8', clk_period=0.95 )
+#-------------------------------------------------------------------------
+# Flow parameters
+#-------------------------------------------------------------------------
+
+build_dir = '../../../sim/build'
+files = [
+  f'{build_dir}/SortUnitStructRTL__nbits_8__pickled.v',
+  f'{build_dir}/sort-rtl-struct-random.verilator1.vcd',
+]
+top_name   = 'SortUnitStructRTL__nbits_8'
+clk_period = 0.95 #ns
 ```
 
 Then simply use `pyhflow` to reconfigure and rerun all the steps again.
+We have added a `summary` step in the end that parses the area, timing,
+and power reports for you and prints out useful information. You can
+run the `summary` step as follow:
 
 ```
  % cd $TOPDIR/asic/build
  % pyhflow configure
- % pyhflow run
+ % pyhflow run summary
 
-#=========================================================================
-# Post-Place-and-Route Results
-#=========================================================================
+==========================================================================
+ Summary
+==========================================================================
 
-design_name  = SortUnitStructRTL__nbits_8
-design_area  = 707.294 um^2
-stdcell_area = 707.294 um^2
-macros_area  = 0.0 um^2
-chip_area    = 1612.066 um^2
-core_area    = 1018.248 um^2
-target_clock = 0.95 ns
-slack        = 0.164 ns
-...
-#=========================================================================
-# Power & Energy Analysis Summary
-#=========================================================================
+design_name   = SortUnitStructRTL__nbits_8
+design_area   = 707.294 um^2
+stdcells_area = 707.294 um^2
+macros_area   = 0.0 um^2
+chip_area     = 1612.066 um^2
+core_area     = 1018.248 um^2
+constraint    = 0.95 ns
+slack         = 0.164 ns
+actual_clk    = 0.786 ns
+exec_time     = 105 cycles
+power         = 1.474 mW
+energy        = 0.147031 nJ
+```
 
-design       = SortUnitStructRTL__nbits_8
-exec_time    = 105 cycles
-clock_period = 0.95 ns
-power        = 1.462 mW
-energy       = 0.154168 nJ
+The summary is also saved to `summary.txt` in the `summary` directory.
+You can access it like this:
+
+```
+% cd $TOPDIR/asic/build/summary
+$ less summary.txt
 ```
 
 Recall that earlier in the tutorial, we used a clock cycle constraint of
@@ -909,13 +931,12 @@ file. The entry in the `flow.py` should look like this:
  % cd $TOPDIR/asic/build
  % less flow.py
 
-tut_dir = '../../../sim'
+build_dir = '../../../sim/build'
 files = [
-  f'{tut_dir}/build/SortUnitStructRTL__nbits_8__pickled.v',
-  f'{tut_dir}/build/sort-rtl-struct-zeros.verilator1.vcd',
+  f'{build_dir}/SortUnitStructRTL__nbits_8__pickled.v',
+  f'{build_dir}/sort-rtl-struct-zeros.verilator1.vcd',
 ]
 
-block    = Block( files, 'SortUnitStructRTL__nbits_8', clk_period=1.0 )
 ```
 
 Now we re-run Synopsys PT:
@@ -923,6 +944,7 @@ Now we re-run Synopsys PT:
 ```
  % cd $TOPDIR/asic/build
  % pyhflow configure
+ % pyhflow run pwr
 
 ...
 #=========================================================================
@@ -942,7 +964,7 @@ might ask why the sort unit consumes _any_ energy if it is just sorting a
 stream of zeros. We can dig into the report to find the answer:
 
 ```
- % cd $TOPDIR/asic/build/PrimeTime
+ % cd $TOPDIR/asic/build/pwr
  % less power.hierarchy.rpt
 ...
                                       Int      Switch   Leak      Total
@@ -1080,13 +1102,18 @@ also start with a clock constraint of 0.5ns.
  % less flow.py
 
 ...
-tut_dir = '../../../sim'
-files = [
-  f'{tut_dir}/build/SortUnitStructRTL__nbits_8__pickled.v',
-  f'{tut_dir}/build/sort-rtl-struct-random.verilator1.vcd',
-]
+#-------------------------------------------------------------------------
+# Flow parameters
+#-------------------------------------------------------------------------
 
-block    = Block( files, 'SortUnitStructRTL__nbits_8', clk_period=0.5 )
+build_dir = '../../../sim/build'
+files = [
+  f'{build_dir}/SortUnitStructRTL__nbits_8__pickled.v',
+  f'{build_dir}/sort-rtl-struct-random.verilator1.vcd',
+]
+top_name   = 'SortUnitStructRTL__nbits_8'
+clk_period = 0.5 #ns
+...
 ```
 
 We are now ready to push the single-cycle unpipelined sort unit through
@@ -1110,15 +1137,6 @@ core_area    = 679.896 um^2
 target_clock = 0.5 ns
 slack        = -0.166 ns
 ...
-#=========================================================================
-# Power & Energy Analysis Summary
-#=========================================================================
-
-design       = SortUnitStructRTL__nbits_8
-exec_time    = 103 cycles
-clock_period = 0.5 ns
-power        = 1.485 mW
-energy       = 0.0764775 nJ
 ```
 
 Not surprisingly, the tools cannot meet the same clock constraint that we

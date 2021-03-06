@@ -39,6 +39,7 @@ class SortUnitStructRTL( Component ):
     s.val_S0S1.in_ //= s.in_val
 
     s.elm_S0S1 = [ Reg(mk_bits(nbits)) for i in range(4) ]
+
     for i in range(4):
       s.elm_S0S1[i].in_ //= s.in_[i]
 

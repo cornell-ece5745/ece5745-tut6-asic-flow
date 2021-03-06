@@ -4,7 +4,11 @@
 # Models the cycle-approximate timing behavior of the target hardware.
 
 from collections import deque
-from pymtl3      import *
+from copy import deepcopy
+
+from pymtl3 import *
+
+from .SortUnitFL import sort_fl
 
 class SortUnitCL( Component ):
 
@@ -22,7 +26,7 @@ class SortUnitCL( Component ):
 
     @update_ff
     def block():
-      s.pipe.append( [ int(s.in_val) ] + sorted( [int(x) for x in s.in_ ] ) )
+      s.pipe.append( deepcopy( [s.in_val] + sort_fl(s.in_) ) )
       data = s.pipe.popleft()
       s.out_val <<= data[0]
       for i, v in enumerate( data[1:] ):
