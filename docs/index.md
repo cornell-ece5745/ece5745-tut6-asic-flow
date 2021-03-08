@@ -12,8 +12,8 @@ ECE 5745 Tutorial 6: Automated ASIC Flow
  - Using Synopsys Design Compiler for Synthesis
  - Using Synopsys IC Compiler for Place-and-Route
  - Using Synopsys PrimeTime for Power Analysis
- - Using Verilog RTL Models
  - Using the Automated ASIC Flow for Design-Space Exploration
+ - Using Verilog RTL Models
  - Pushing GCD Unit Through the Automated ASIC Flow
 
 Introduction
@@ -26,11 +26,7 @@ obviously very tedious and error prone. An agile hardware design flow
 demands automation to simplify rapidly exploring the area, energy, timing
 design space of one or more designs. Luckily, Synopsys tools can be
 easily scripted using TCL, and even better, the ECE 5745 staff have
-already created these TCL scripts along with a set of Makefiles to run
-these TCL scripts. The ECE 5745 TCL scripts were based on the Synopsys
-reference methodology which is copyrighted by Synopsys. This means you
-_cannot_ take this repo and/or the scripts and make them public. Please
-keep this in mind.
+already created a Python framework for automating the entire flow.
 
 The tutorial will describe how these scripts can make it relatively easy
 to take designs from RTL to layout. We often call such a set of scripts
@@ -42,12 +38,8 @@ have already completed the tutorials on Linux, Git, PyMTL, Verilog, and
 the Synopsys ASIC tools.
 
 The following diagram illustrates the four primary tools we will be using
-in ECE 5745. Notice that this toolflow diagram is higher level than the
-one we used in the previous tutorial. This is because the ASIC flow
-actually uses several additional other files, but at the same time, we
-are less concerned about the details of every single step since we are
-using automating the entire process. We can hopefully focus more on the
-big picture of how the tools fit together at a high-level.
+in ECE 5745. This is the same flow diagram from the previous tutorial
+since we are essentially just automating the exact same steps.
 
 ![](assets/fig/asic-flow.png)
 
@@ -66,26 +58,26 @@ big picture of how the tools fit together at a high-level.
     library. We need to provide Synopsys DC with higher-level
     characterization information about our standard cell library.
 
- 3. We use Cadence Innovus to place-and-route our design,
-    which means to place all of the gates in the gate-level netlist into
-    rows on the chip and then to generate the metal wires that connect
-    all of the gates together. Cadence Innovus will also handle power and
-    clock routing. We need to provide Cadence Innovus with lower-level
-    characterization information about our standard cell library.
-    Cadence Innovus also generates reports that can be used to more
-    accurately characterize area and timing.
+ 3. We use Cadence Innovus to place-and-route our design, which means to
+    place all of the gates in the gate-level netlist into rows on the
+    chip and then to generate the metal wires that connect all of the
+    gates together. Cadence Innovus will also handle power and clock
+    routing. We need to provide Cadence Innovus with lower-level
+    characterization information about our standard cell library. Cadence
+    Innovus also generates reports that can be used to more accurately
+    characterize area and timing.
 
  4. We use Synopsys PrimeTime (PT) to perform power-analysis of our
     design. This requires switching activity information for every net in
     the design (which comes from the PyMTL simulator) and parasitic
     capacitance information for every net in the design (which comes from
-    Cadence Innovus). Synopsys PT puts the switching activity, capacitance,
-    clock frequency, and voltage together to estimate the power
-    consumption of every net and thus every module in the design.
+    Cadence Innovus). Synopsys PT puts the switching activity,
+    capacitance, clock frequency, and voltage together to estimate the
+    power consumption of every net and thus every module in the design.
 
-Extensive documentation is provided by Synopsys for Design Compiler, Cadence
-Innovus, and Synopsys PrimeTime. We have organized this documentation and made it
-available to you on the [public course
+Extensive documentation is provided by Synopsys for Design Compiler,
+Cadence Innovus, and Synopsys PrimeTime. We have organized this
+documentation and made it available to you on the [public course
 webpage](http://www.csl.cornell.edu/courses/ece5745/asicdocs). The
 username/password was distributed during lecture.
 
@@ -95,7 +87,7 @@ directory for the project.
 
 ```
  % source setup-ece5745.sh
- % mkdir $HOME/ece5745
+ % mkdir -p $HOME/ece5745
  % cd $HOME/ece5745
  % git clone git@github.com:cornell-ece5745/ece5745-tut6-asic-flow
  % cd ece5745-tut6-asic-flow
@@ -121,7 +113,7 @@ tutorial. If you have not completed the PyMTL tutorial then go back and
 do that now.
 
 ```
- % mkdir $TOPDIR/sim/build
+ % mkdir -p $TOPDIR/sim/build
  % cd $TOPDIR/sim/build
  % pytest ../tut3_pymtl/sort
  % pytest ../tut3_pymtl/sort --test-verilog
@@ -253,9 +245,8 @@ Now all we need to do is to use pyhflow to configure the flow and run the
 synthesis step like this:
 
 ```
- % cd $TOPDIR/asic
- % mkdir build
- % cd build
+ % mkdir -p $TOPDIR/asic/build
+ % cd $TOPDIR/asic/build
  % pyhflow configure ../flow_tut6_sort.py
  % pyhflow run synth
 ```
@@ -267,16 +258,16 @@ the same thing as what we did in the previous tutorial.
 The first thing to do after you finish synthesis for a new design is to
 _look at the log file_! We cannot stress how importance this is. Synopsys
 DC will often exit with an error or worse simply produce some warnings
-which are actually catastrophic. If you just blindly use `make` and then
-move on to Cadence Innovus there is a good chance you will be pushing a
-completely broken design through the flow. There are many, many things
-that can go wrong. You may have used the incorrect file/module names in
-the `flow.py`, there might be code in your Verilog RTL that is not
-synthesizable, or you might have a simulation/synthesis mismatch such
-that the design you are pushing through the flow is not really what you
-were simulating. This is not easy and there is no simple way to figure
-out these issues, but you must start by looking for errors and warnings
-in the log file like this:
+which are actually catastrophic. If you just blindly use `pyhflow run
+synth` and then move on to Cadence Innovus there is a good chance you
+will be pushing a completely broken design through the flow. There are
+many, many things that can go wrong. You may have used the incorrect
+file/module names in the `flow.py`, there might be code in your Verilog
+RTL that is not synthesizable, or you might have a simulation/synthesis
+mismatch such that the design you are pushing through the flow is not
+really what you were simulating. This is not easy and there is no simple
+way to figure out these issues, but you must start by looking for errors
+and warnings in the log file like this:
 
 ```
  % cd $TOPDIR/asic/build
@@ -765,11 +756,6 @@ SortUnitStructRTL__nbits_8            1.09e-03 4.33e-04 1.52e-05  1.54e-03 100.0
 
 These results are similar to what we saw in the previous tutorial.
 
-Using Verilog RTL Models
---------------------------------------------------------------------------
-
-TBD
-
 Using the Automated ASIC Flow for Design-Space Exploration
 --------------------------------------------------------------------------
 
@@ -1147,4 +1133,116 @@ time is 0.666ns. The three-stage pipelined design had a cycle time of
 0.315ns, so we might expect the single-cycle unpipelined design to have a
 cycle time of 0.945ns. Digging into the timing reports helps explain what
 is going on.
+
+Using Verilog RTL Models
+--------------------------------------------------------------------------
+
+Students are welcome to use Verilog instead of PyMTL3 to design their RTL
+models. Having said this, we will still exclusively use PyMTL3 for all
+test harnesses, FL/CL models, and simulation drivers. This really
+simplifies managing the course, and PyMTL3 is actually a very productive
+way to test/evaluate your Verilog RTL designs. We use PyMTL3's Verilog
+import feature described in the Verilog tutorial to make all of this
+work. The following commands will run all of the tests on the _Verilog_
+implementation of the sort unit.
+
+```
+ % cd $TOPDIR/sim/build
+ % rm -rf *
+ % pytest ../tut4_verilog/sort
+```
+
+As before, the tests for the `SortUnitStructRTL` will fail. You can just
+copy over your implementation of the `MinMaxUnit` from when you completed
+the Verilog tutorial. If you have not completed the Verilog tutorial then
+you might want to go back and do that now. Basically the `MinMaxUnit`
+should look like this:
+
+```
+`ifndef TUT4_VERILOG_SORT_MIN_MAX_UNIT_V
+`define TUT4_VERILOG_SORT_MIN_MAX_UNIT_V
+
+module tut4_verilog_sort_MinMaxUnit
+#(
+  parameter p_nbits = 1
+)(
+  input  logic [p_nbits-1:0] in0,
+  input  logic [p_nbits-1:0] in1,
+  output logic [p_nbits-1:0] out_min,
+  output logic [p_nbits-1:0] out_max
+);
+
+  always_comb begin
+
+    // Find min/max
+
+    if ( in0 >= in1 ) begin
+      out_max = in0;
+      out_min = in1;
+    end
+    else if ( in0 < in1 ) begin
+      out_max = in1;
+      out_min = in0;
+    end
+
+    // Handle case where there is an X in the input
+
+    else begin
+      out_min = 'x;
+      out_max = 'x;
+    end
+
+  end
+
+endmodule
+
+`endif /* TUT4_VERILOG_SORT_MIN_MAX_UNIT_V */
+```
+
+After running the tests we use the sort unit simulator to translate the
+Verilog RTL model into Verilog and to dump the VCD file that we want to
+use for power analysis.
+
+```
+ % cd $TOPDIR/sim/build
+ % ../tut4_verilog/sort/sort-sim --impl rtl-struct --stats --translate --dump-vcd
+ % vcd2saif -input sort-rtl-struct-random.verilator1.vcd -output sort-rtl-struct-random.saif
+```
+
+Take a moment to open up the translated Verilog which should be in a file
+named `SortUnitFlatRTL__nbits_8__pickled.v`. You might ask, "Why do we
+need to use PyMTL3 to translate the Verilog if we already have the
+Verilog?" PyMTL3 will take care of preprocessing all of your Verilog RTL
+code to ensure it is in a single Verilog file. This greatly simplifies
+getting your design into the ASIC flow. This also ensures a one-to-one
+match between the Verilog that was used to generate the VCD file and the
+Verilog that is used in the ASIC flow.
+
+Once you have tested your design and generated the single Verilog file
+and the VCD file, you can push the design through the ASIC flow using
+PyHFlow like this:
+
+```
+ % mkdir -p $TOPDIR/asic/build-verilog
+ % cd $TOPDIR/asic/build-verilog
+ % pyhflow configure ../flow_tut6_sort.py
+ % pyhflow run
+```
+
+The PyMTL RTL and Verilog RTL designs should show similar results, but
+obviously they won't be exactly the same since the source code is
+different.
+
+To Do On Your Own
+--------------------------------------------------------------------------
+
+Use what you have learned so far to push the GCD Unit through the flow.
+You can use either the PyMTL3 or Verilog GCD Unit provided along with
+this tutorial. You will need to verify the GCD Unit works, generate the
+corresponding Verilog RTL and VCD file using the GCD Unit simulator,
+generate the corresponding `.saif` file, use the provided
+`tut6_flow_gcd.py` file along with PyHFlow to push the design through the
+flow.
+
+
 

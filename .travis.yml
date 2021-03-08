@@ -21,17 +21,18 @@ install:
 
  # Install verilator
 
- - wget https://github.com/cornell-brg/verilator-travisci-cache/raw/master/verilator-travis-4.026.tar.gz
- - tar -C ${HOME} -xzf verilator-travis-4.026.tar.gz
+ - wget https://github.com/cornell-brg/verilator-travisci-cache/raw/master/verilator-travis-4.036.tar.gz
+ - tar -C ${HOME} -xzf verilator-travis-4.036.tar.gz
  - export VERILATOR_ROOT=${HOME}/verilator
  - export PATH=${VERILATOR_ROOT}/bin:${PATH}
  - export PYMTL_VERILATOR_INCLUDE_DIR=${VERILATOR_ROOT}/share/verilator/include
  - verilator --version
 
  # Install PyMTL
+
  - pip install -U pip
  - pip install -U hypothesis
- - pip install -U git+https://github.com/cornell-brg/pymtl3.git@spring20-ece5745
+ - pip install -U git+https://github.com/pymtl/pymtl3.git@ece5745-2021
  - pip list
 
 #------------------------------------------------------------------------
