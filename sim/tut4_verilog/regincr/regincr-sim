@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+#=========================================================================
+# regincr-sim <input-values>
+#=========================================================================
+
+from pymtl3        import *
+from pymtl3.passes import TracingConfigs
+from sys           import argv
+from RegIncrNstage import RegIncrNstage
+
+# Get list of input values from command line
+
+input_values = [ int(x,0) for x in argv[1:] ]
+
+# Add three zero values to end of list of input values
+
+input_values.extend( [0, 0, 0] )
+
+# ''' TUTORIAL TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''
+# This simulator script is incomplete. As part of the tutorial you will
+# insert code here for constructing and elaborating a RegIncr model
+# before using the SimulationTool to create a simulator.
+# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+# Create a simulator using simulation tool
+
+model.apply( SimulationPass() )
+
+# Reset simulator
+
+model.sim_reset()
+
+# Apply input values and display output values
+
+for input_value in input_values:
+
+  # Write input value to input port
+
+  model.in_ = b8(input_value)
+  model.eval_combinational()
+
+  # ''' TUTORIAL TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''
+  # In the following print statement we are directly using the model
+  # ports to create some tracing output. Later in the tutorial you will
+  # replace this with a call to the simulator's print_line_trace method.
+  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+  print " cycle = {}: in = {}, out = {}" \
+    .format( sim.ncycles, model.in_, model.out )
+
+  # Tick simulator one cycle
+
+  model.tick()
+
