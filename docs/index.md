@@ -599,14 +599,15 @@ analysis.
 # Post-Place-and-Route Results
 #=========================================================================
 
-design_name  = SortUnitStructRTL__nbits_8
-design_area  = 701.176 um^2
-stdcell_area = 701.176 um^2
-macros_area  = 0.0 um^2
-chip_area    = 1597.277 um^2
-core_area    = 1006.544 um^2
-target_clock = 1.0 ns
-slack        = 0.155 ns
+design_name   = SortUnitStructRTL__nbits_8
+design_area   = 707.826 um^2
+stdcells_area = 707.826 um^2
+macros_area   = 0.0 um^2
+chip_area     = 1604.672 um^2
+core_area     = 1012.396 um^2
+constraint    = 1.0 ns
+slack         = 0.209 ns
+actual_clk    = 0.791 ns
 ```
 
 While we do not use GUIs to drive our flow, we often use GUIs to analyze
@@ -670,15 +671,16 @@ this step. You can also display it directly like this:
  % cd $TOPDIR/asic/build/pwr
  % less summary.txt
 
-#=========================================================================
-# Power & Energy Analysis Summary
-#=========================================================================
+==========================================================================
+ Power & Energy Analysis Summary
+==========================================================================
 
-design       = SortUnitStructRTL__nbits_8
-exec_time    = 105 cycles
-clock_period = 1.0 ns
-power        = 1.455 mW
-energy       = 0.152775 nJ
+- sort-rtl-struct-random.verilator1.vcd
+  - design       = SortUnitStructRTL__nbits_8
+  - exec_time    = 105 cycles
+  - clock_period = 1.0 ns
+  - power        = 1.404 mW
+  - energy       = 0.14742 nJ
 ```
 
 You can see the total area, cycle time, power, and energy for your design
@@ -687,7 +689,7 @@ the `flow.py`). You can see an overview of the power consumption here:
 
 ```
  % cd $TOPDIR/asic/pwr
- % less power.rpt
+ % less sort-rtl-struct-random.verilator1.pwr.rpt
  ...
                         Internal  Switching  Leakage    Total
 Power Group             Power     Power      Power      Power   (     %)  Attrs
@@ -726,7 +728,7 @@ You can see a more detailed power breakdown by module here:
 
 ```
  % cd $TOPDIR/asic/pwr
- % less power.hierarchy.rpt
+ % less sort-rtl-struct-random.verilator1.pwr.hierarchy.rpt
 ...
                                       Int      Switch   Leak      Total
 Hierarchy                             Power    Power    Power     Power    %
@@ -815,18 +817,23 @@ run the `summary` step as follow:
  Summary
 ==========================================================================
 
-design_name   = SortUnitStructRTL__nbits_8
-design_area   = 707.294 um^2
-stdcells_area = 707.294 um^2
-macros_area   = 0.0 um^2
-chip_area     = 1612.066 um^2
-core_area     = 1018.248 um^2
-constraint    = 0.95 ns
-slack         = 0.164 ns
-actual_clk    = 0.786 ns
-exec_time     = 105 cycles
-power         = 1.474 mW
-energy        = 0.147031 nJ
+design_name = SortUnitStructRTL__nbits_8
+
+area & timing
+  design_area   = 713.678 um^2
+  stdcells_area = 713.678 um^2
+  macros_area   = 0.0 um^2
+  chip_area     = 1626.856 um^2
+  core_area     = 1029.952 um^2
+  constraint    = 0.95 ns
+  slack         = 0.17 ns
+  actual_clk    = 0.78 ns
+
+power & energy
+  sort-rtl-struct-random.verilator1.vcd
+    exec_time = 105 cycles
+    power     = 1.484 mW
+    energy    = 0.148029 nJ
 ```
 
 The summary is also saved to `summary.txt` in the `summary` directory.
@@ -910,19 +917,24 @@ different input:
  % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --input zeros --translate --dump-vcd
 ```
 
-Now we need to change the entry in the `flow.py` to point to the new VCD
+Now we need to change the entry in the `flow.py` to point add a new VCD
 file. The entry in the `flow.py` should look like this:
 
 ```
  % cd $TOPDIR/asic/build
  % less flow.py
+...
+#-------------------------------------------------------------------------
+# Flow parameters
+#-------------------------------------------------------------------------
 
 build_dir = '../../../sim/build'
 files = [
   f'{build_dir}/SortUnitStructRTL__nbits_8__pickled.v',
+  f'{build_dir}/sort-rtl-struct-random.verilator1.vcd',
   f'{build_dir}/sort-rtl-struct-zeros.verilator1.vcd',
 ]
-
+...
 ```
 
 Now we re-run Synopsys PT:
@@ -933,15 +945,23 @@ Now we re-run Synopsys PT:
  % pyhflow run pwr
 
 ...
-#=========================================================================
-# Power & Energy Analysis Summary
-#=========================================================================
+==========================================================================
+ Power & Energy Analysis Summary
+==========================================================================
 
-design       = SortUnitStructRTL__nbits_8
-exec_time    = 105 cycles
-clock_period = 1.0 ns
-power        = 0.7033 mW
-energy       = 0.0738465 nJ
+- sort-rtl-struct-random.verilator1.vcd
+  - design       = SortUnitStructRTL__nbits_8
+  - exec_time    = 105 cycles
+  - clock_period = 0.95 ns
+  - power        = 1.484 mW
+  - energy       = 0.148029 nJ
+
+- sort-rtl-struct-zeros.verilator1.vcd
+  - design       = SortUnitStructRTL__nbits_8
+  - exec_time    = 105 cycles
+  - clock_period = 0.95 ns
+  - power        = 0.5819 mW
+  - energy       = 0.0580445 nJ
 ```
 
 Not surprisingly, sorting a stream of zeros consumes significantly less
@@ -951,7 +971,7 @@ stream of zeros. We can dig into the report to find the answer:
 
 ```
  % cd $TOPDIR/asic/build/pwr
- % less power.hierarchy.rpt
+ % less sort-rtl-struct-zeros.verilator1.pwr.rpt
 ...
                                       Int      Switch   Leak      Total
 Hierarchy                             Power    Power    Power     Power    %
