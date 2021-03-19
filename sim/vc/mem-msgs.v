@@ -99,7 +99,7 @@ module vc_MemReqMsg4BTrace
 (
   input logic         clk,
   input logic         reset,
-  input logic         en,
+  input logic         val,
   input logic         rdy,
   input mem_req_4B_t  msg
 );
@@ -162,7 +162,7 @@ module vc_MemReqMsg4BTrace
 
     // Trace with en/rdy signals
 
-    vc_trace.append_en_rdy_str( trace_str, en, rdy, str );
+    vc_trace.append_val_rdy_str( trace_str, val, rdy, str );
 
   end
   `VC_TRACE_END
@@ -173,7 +173,7 @@ module vc_MemReqMsg8BTrace
 (
   input logic         clk,
   input logic         reset,
-  input logic         en,
+  input logic         val,
   input logic         rdy,
   input mem_req_8B_t  msg
 );
@@ -234,9 +234,9 @@ module vc_MemReqMsg8BTrace
         $sformat( str, "%s:%x:%x:%x", type_str, msg.opaque, msg.addr, msg.data );
     end
 
-    // Trace with en/rdy signals
+    // Trace with val/rdy signals
 
-    vc_trace.append_en_rdy_str( trace_str, en, rdy, str );
+    vc_trace.append_val_rdy_str( trace_str, val, rdy, str );
 
   end
   `VC_TRACE_END
@@ -247,9 +247,9 @@ module vc_MemReqMsg16BTrace
 (
   input logic         clk,
   input logic         reset,
-  input logic         en,
+  input logic         val,
   input logic         rdy,
-  input mem_req_16B_t  msg
+  input mem_req_16B_t msg
 );
 
   logic [3:0]   type_;
@@ -308,9 +308,9 @@ module vc_MemReqMsg16BTrace
         $sformat( str, "%s:%x:%x:%x", type_str, msg.opaque, msg.addr, msg.data );
     end
 
-    // Trace with en/rdy signals
+    // Trace with val/rdy signals
 
-    vc_trace.append_en_rdy_str( trace_str, en, rdy, str );
+    vc_trace.append_val_rdy_str( trace_str, val, rdy, str );
 
   end
   `VC_TRACE_END
@@ -408,7 +408,7 @@ module vc_MemRespMsg4BTrace
 (
   input logic          clk,
   input logic          reset,
-  input logic          en,
+  input logic          val,
   input logic          rdy,
   input mem_resp_4B_t  msg
 );
@@ -469,7 +469,7 @@ module vc_MemRespMsg4BTrace
 
     // Trace with en/rdy signals
 
-    vc_trace.append_en_rdy_str( trace_str, en, rdy, str );
+    vc_trace.append_val_rdy_str( trace_str, val, rdy, str );
 
   end
   `VC_TRACE_END
@@ -480,7 +480,7 @@ module vc_MemRespMsg8BTrace
 (
   input logic          clk,
   input logic          reset,
-  input logic          en,
+  input logic          val,
   input logic          rdy,
   input mem_resp_8B_t  msg
 );
@@ -541,7 +541,7 @@ module vc_MemRespMsg8BTrace
 
     // Trace with en/rdy signals
 
-    vc_trace.append_en_rdy_str( trace_str, en, rdy, str );
+    vc_trace.append_val_rdy_str( trace_str, val, rdy, str );
 
   end
   `VC_TRACE_END
@@ -552,7 +552,7 @@ module vc_MemRespMsg16BTrace
 (
   input logic          clk,
   input logic          reset,
-  input logic          en,
+  input logic          val,
   input logic          rdy,
   input mem_resp_16B_t msg
 );
@@ -611,9 +611,9 @@ module vc_MemRespMsg16BTrace
         $sformat( str, "%s:%x:%x", type_str, opaque, data );
     end
 
-    // Trace with en/rdy signals
+    // Trace with val/rdy signals
 
-    vc_trace.append_en_rdy_str( trace_str, en, rdy, str );
+    vc_trace.append_val_rdy_str( trace_str, val, rdy, str );
 
   end
   `VC_TRACE_END

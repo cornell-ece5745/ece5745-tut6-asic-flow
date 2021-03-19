@@ -641,6 +641,7 @@ Another very useful feature is to highlight the critical path on the
 amoeba plot using the following steps:
 
  - Choose _Timing > Debug Timing_ from the menu
+ - Click _OK_ in the pop-up window
  - Right click on first path in the _Path List_
  - Choose _Highlight > Only This Path > Color_
 
