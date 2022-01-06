@@ -2,8 +2,8 @@
 ECE 5745 Tutorial 6: Automated ASIC Flow
 ==========================================================================
 
- - Author: Christopher Batten, Yanghui Ou
- - Date: March 1, 2020
+ - Author: Christopher Batten, Yanghui Ou, Jack Brzozowski
+ - Date: January 6, 2022
 
 **Table of Contents**
 
