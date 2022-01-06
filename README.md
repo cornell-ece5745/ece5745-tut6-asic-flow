@@ -10,8 +10,8 @@ tool. This is obviously very tedious and error prone. An agile hardware
 design flow demands automation to simplify rapidly exploring the area,
 energy, timing design space of one or more designs. Luckily, Synopsys
 tools can be easily scripted using TCL, and even better, the ECE 5745
-staff have already created a Python framework for automating the entire
-flow.
+staff have already created a flow using mflowgen to allow students to
+leverage a much more automated flow to create their designs.
 
 You can find the actual tutorial document in the repo here:
 
