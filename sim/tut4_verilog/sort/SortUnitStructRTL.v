@@ -184,10 +184,10 @@ module tut4_verilog_sort_SortUnitStructRTL
   // Assign output ports
 
   assign out_val = val_S3;
-  assign out0    = elm0_S3;
-  assign out1    = mmuA_out_min_S3;
-  assign out2    = mmuA_out_max_S3;
-  assign out3    = elm3_S3;
+  assign out0    = elm0_S3 & {p_nbits{out_val}};
+  assign out1    = mmuA_out_min_S3 & {p_nbits{out_val}};
+  assign out2    = mmuA_out_max_S3 & {p_nbits{out_val}};
+  assign out3    = elm3_S3 & {p_nbits{out_val}};
 
   //----------------------------------------------------------------------
   // Assertions

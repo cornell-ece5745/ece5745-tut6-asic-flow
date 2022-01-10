@@ -9,9 +9,8 @@ previous tutorial required students to enter commands manually for each
 tool. This is obviously very tedious and error prone. An agile hardware
 design flow demands automation to simplify rapidly exploring the area,
 energy, timing design space of one or more designs. Luckily, Synopsys
-tools can be easily scripted using TCL, and even better, the ECE 5745
-staff have already created a flow using mflowgen to allow students to
-leverage a much more automated flow to create their designs.
+tools can be easily scripted using TCL, and even better, the ECE 5745 
+staff have created steps for automating the entire flow using mflowgen.
 
 You can find the actual tutorial document in the repo here:
 

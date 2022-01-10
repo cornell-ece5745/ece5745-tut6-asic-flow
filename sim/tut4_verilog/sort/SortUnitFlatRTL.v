@@ -216,10 +216,10 @@ module tut4_verilog_sort_SortUnitFlatRTL
   // Assign output ports
 
   assign out_val = val_S3;
-  assign out0    = elm0_next_S3;
-  assign out1    = elm1_next_S3;
-  assign out2    = elm2_next_S3;
-  assign out3    = elm3_next_S3;
+  assign out0    = elm0_next_S3 & {p_nbits{out_val}};
+  assign out1    = elm1_next_S3 & {p_nbits{out_val}};
+  assign out2    = elm2_next_S3 & {p_nbits{out_val}};
+  assign out3    = elm3_next_S3 & {p_nbits{out_val}};
 
   //----------------------------------------------------------------------
   // Assertions

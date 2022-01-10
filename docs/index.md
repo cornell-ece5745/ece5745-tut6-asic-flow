@@ -10,7 +10,7 @@ ECE 5745 Tutorial 6: Automated ASIC Flow
  - Introduction
  - PyMTL-Based Testing, Simulation, Translation
  - Using Synopsys Design Compiler for Synthesis
- - Using Synopsys IC Compiler for Place-and-Route
+ - Using Cadence Innovus for Place-and-Route
  - Using Synopsys PrimeTime for Power Analysis
  - Using the Automated ASIC Flow for Design-Space Exploration
  - Using Verilog RTL Models
@@ -26,20 +26,23 @@ obviously very tedious and error prone. An agile hardware design flow
 demands automation to simplify rapidly exploring the area, energy, timing
 design space of one or more designs. Luckily, Synopsys tools can be
 easily scripted using TCL, and even better, the ECE 5745 staff have
-already created a Python framework for automating the entire flow.
+created steps for automating the entire flow using mflowgen.
 
-The tutorial will describe how these scripts can make it relatively easy
-to take designs from RTL to layout. We often call such a set of scripts
-an "ASIC flow". However, it is critical for students to avoid thinking of
-the ASIC flow as a black box. As in all engineering, garbage-in means
-garbage-out. If you are not careful it is all to easy to use the ASIC
-flow to analyze a completely invalid design. This tutorial assumes you
-have already completed the tutorials on Linux, Git, PyMTL, Verilog, and
-the Synopsys ASIC tools.
+The tutorial will describe how mflowgen makes it relatively easy to take 
+designs from RTL to layout. Mflowgen uses modular steps to piece together 
+a set of scripts that generates all the files we'll need to describe the 
+final layout, and well as reports on power, timing, and much more. We often 
+call such a set of scripts an "ASIC flow". However, it is critical for students 
+to avoid thinking of the ASIC flow as a black box. As in all engineering, 
+garbage-in means garbage-out. If you are not careful it is all to easy to use 
+the ASIC flow to analyze a completely invalid design. This tutorial assumes you 
+have already completed the tutorials on Linux, Git, PyMTL, Verilog, and the 
+Synopsys ASIC tools.
 
 The following diagram illustrates the four primary tools we will be using
 in ECE 5745. This is the same flow diagram from the previous tutorial
-since we are essentially just automating the exact same steps.
+since in part 1 of this tutorial, we are essentially just automating 
+the exact same steps.
 
 ![](assets/fig/asic-flow.png)
 
@@ -112,6 +115,39 @@ implementation of the `MinMaxUnit` from when you completed the PyMTL
 tutorial. If you have not completed the PyMTL tutorial then go back and
 do that now.
 
+Basically the MinMaxUnit should look like this:
+```python
+from pymtl3 import *
+
+class MinMaxUnit( Component ):
+
+  # Constructor
+
+  def construct( s, nbits ):
+
+    s.in0     = InPort ( nbits )
+    s.in1     = InPort ( nbits )
+    s.out_min = OutPort( nbits )
+    s.out_max = OutPort( nbits )
+
+    @update
+    def block():
+
+      if s.in0 >= s.in1:
+        s.out_max @= s.in0
+        s.out_min @= s.in1
+      else:
+        s.out_max @= s.in1
+        s.out_min @= s.in0
+
+  # Line tracing
+
+  def line_trace( s ):
+    return f"{s.in0}|{s.in1}(){s.out_min}|{s.out_max}"
+```
+
+Now running the following tests will pass.
+
 ```
  % mkdir -p $TOPDIR/sim/build
  % cd $TOPDIR/sim/build
@@ -124,7 +160,7 @@ option tells the PyMTL framework to first translate the sort unit into
 Verilog, and then important it back into PyMTL to verify that the
 translated Verilog is itself correct.
 
-Let's experiment with an example which is valid PyMTL code, but does is
+Let's experiment with an example which is valid PyMTL code, but is
 not translatable to illustrate the importance of testing with
 `--test-verilog`. Instead of using an `if` statement to implement the
 `MinMaxUnit`, maybe we want to be clever and use the built-in `min` and
