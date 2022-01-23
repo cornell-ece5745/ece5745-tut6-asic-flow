@@ -460,8 +460,8 @@ included in a python dictionary. These parameters are how we configure specific
 steps to do what we want them to. Parameters will be passed to all steps that 
 have that parameter.
 
-Let's take a look at step creation and connection. We create the special ADK s
-tep first. And then we instantiate all of the other steps below.
+Let's take a look at step creation and connection. We create the special ADK step 
+first. And then we instantiate all of the other steps below.
 
 ```python
   # ADK step
@@ -535,13 +535,12 @@ those after we update the parameters for all other steps like this:
   rtlsim.update_params({'simtype':'rtl'}, False)
   glFFsim.update_params({'simtype':'gate-level'}, False)
   glBAsim.update_params({'simtype':'gate-level'}, False)
-  rtlpower.update_params({'zero_delay_simulation': True}, False)
   synthpower.update_params({'zero_delay_simulation': True}, False)
 ```
 
 The first command updates all parameters with the parameters dictionary defined 
 at the beginning of the flow.py file. To change any of these, we can call 
-`update_params()` on that specific step. Now that we have a basic undeerstanding 
+`update_params()` on that specific step. Now that we have a basic understanding 
 of how graphs are built in mflowgen, we can start to push our design through 
 the flow. 
 
@@ -566,6 +565,9 @@ Clock period     -- 0.6
 ADK              -- freepdk-45nm
 ADK view         -- stdview
 ```
+
+This gives us a nice overview of what this build is configured for, which 
+design it's building, at what clokc_period, and using which adk.
 
 Next, let's build the first real step in the flow, the ece5745-block-gather 
 step, this time using the step number. You should see all of the pymtl tests 
@@ -755,14 +757,14 @@ will be the wrapper module name. You may also notice that some of these paramete
 are defined despite not being in the `SortUnitStructRTL_BlockFlow.py` parameters 
 dictionary. Steps can also define default values for their parameters in their 
 respective `configure.yml` files, so we only need to specify them if we want to 
-override them to something other than their default value. 
+override them to something other than their default value. (For example, 
+waveform=True is not specified in the flow.py, but we'll almost always want vcd 
+files to use for debugging purposes or for saif generation for power analysis in 
+the case of gate level simulation.)
 
 ```bash
  % make 3
-
- .
- .
- .
+ ...
  === Running run_sim.py -t sort-rtl-struct-zeros =======
  command: vcs  ./inputs/rtl/SortUnitStructRTL__nbits_8.v -full64 -debug_pp -sverilog +incdir+./inputs/testbenches  +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ./inputs/testbenches/ SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+outputs/vcd/sort-rtl-struct-zeros.vcd +incdir +./inputs/rtl -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
  VCD to SAIF translator version R-2020.09-SP2 Synopsys, Inc.
@@ -827,7 +829,7 @@ actually doing.
 ```bash
  % cd $TOPDIR/asic/build
  % make info-4
- 
+ ...
  Parameters
 
 - clk_port                  : clk
@@ -980,7 +982,7 @@ However, there is a "resources" report that can be somewhat useful. You
 can view the resources report like this:
 
 ```
- % cd $TOPDIR/asic/build/4-brg-synopsys-dc-synthesi
+ % cd $TOPDIR/asic/build/4-brg-synopsys-dc-synthesis
  % less SortUnitStructRTL__nbits_8.mapped.resources.rpt
 
 ****************************************
@@ -1214,7 +1216,7 @@ The sort unit consumes ~2.4mW of power when processing random input data.
 This is in the same ballpark as we saw in the previous tutorial. These
 numbers are not identical to the previous tutorial, since the ASIC flow
 uses more commands with different options than what we did manually. 
-We are also doing this analysis Post-Synthesis, not Post Place and Route. 
+We are also doing this analysis Post-Synthesis, not Post-Place-and-Route. 
 This can be extremely useful for iterating on designs up to the point of 
 synthesis, as place and route can be rather time consuming for bigger designs. 
 
@@ -1307,14 +1309,43 @@ configure our design. We also use this step to set up path groups similarly
 to how we did in synthesis.
 
 ```
+ set init_mmmc_file "./scripts/setup-timing.tcl"
+ set init_verilog   "./inputs/design.v"
+ set init_top_cell  $env(design_name)
+ 
+ if {$env(extra_link_lib_dir)!=""} {
+     set extra_link_lib_dir $::env(extra_link_lib_dir)
+     set init_lef_file  [join "
+                               [list ./inputs/adk/rtk-tech.lef         \
+                                     ./inputs/adk/stdcells.lef         ]
+                               [lsort [glob -nocomplain ./inputs/adk/*.lef]]
+                               [lsort [glob -nocomplain $extra_link_lib_dir/*.lef]]
+                       "]
+ } else {
+     set init_lef_file [join "
+                               [list ./inputs/adk/rtk-tech.lef         \
+                                     ./inputs/adk/stdcells.lef         ]
+                               [lsort [glob -nocomplain ./inputs/adk/*.lef]]
+                       "]
+ }
+ 
+ set init_gnd_net $ADK_GND_NETS
+ set init_pwr_net $ADK_PWR_NETS
+ 
+ #-------------------------
+ # Init
+ #-------------------------
+ # Uniquify the design to use multiple instantiations of the same module
+ set init_design_uniquify 1
+ 
+ init_design
+ 
  setDesignMode -process $ADK_PROCESS -powerEffort High
  setDesignMode -bottomRoutingLayer            $ADK_MIN_ROUTING_LAYER_INNOVUS
  setDesignMode -topRoutingLayer               $ADK_MAX_ROUTING_LAYER_INNOVUS
  setAnalysisMode -analysisType OnChipVariation -cppr both
-
- .
- .
- . 
+ 
+ ...
   
  # Create collection for each category
  
@@ -1441,7 +1472,7 @@ actually do placement, clock-tree synthesis and optimization and routing. We als
 have the ability to add in setup and hold time fixing for designs that have 
 violating paths. This step will likely take the longest. For a simple design like 
 this one, however, it should be no more than a few minutes. For more complex 
-designs, do not be surprised to see pnr take 20 minutes or even longer. 
+designs, do not be surprised to see pnr take 30-45 minutes or even longer. 
 
 ```bash
  % cd $TOPDIR/asic/build
@@ -1882,7 +1913,8 @@ add the following lines:
 
 These numbers should work, but in your own designs you may need to do some 
 trial and error to see what works best for your design. Now that we've updated 
-the flow.py file, let's rebuild mflowgen.
+the flow.py file, let's reconstruct mflowgen, and clean the necessary steps 
+that need to be rebuilt.
 
 ```bash
  % mflowgen run --design ../../sim/tut3_pymtl/sort
@@ -1897,9 +1929,9 @@ We clean all the steps we did after pnr, since they will need to be rebuilt. Now
  % make 9
 ```
 
-Look to the run.log to see what's changed. Ctrl+F for `*** Finished Core Fixing` 
-and below that you should find a little summary that tells you how many cells were 
-added for hold time fixing. 
+Look to the run.log in the logs directory of the step to see what's changed. 
+Ctrl+F for `*** Finished Core Fixing` and below that you should find a little 
+summary that tells you how many cells were added for hold time fixing:
 
 ```
 *** Finished Core Fixing (fixHold) cpu=0:00:01.7 real=0:00:02.0 totSessionCpu=0:00:58.8 mem=1521.9M density=77.019% ***
@@ -1962,7 +1994,9 @@ These results are similar to what we saw in the previous tutorial.
 Reviewing the Flow Summary
 --------------------------------------------------------------------------
 
-We have also created a simple flow summary step which collects the summary reports from Innovus signoff and Synopsys PT power analysis steps and puts them into one file thats easy to read. Let's run the flow summary here:
+We have also created a simple flow summary step which collects the summary 
+reports from Innovus signoff and Synopsys PT power analysis steps and puts 
+them into one file thats easy to read. Let's run the flow summary here:
 
 ```bash
  % cd $TOPDIR/asic/build
