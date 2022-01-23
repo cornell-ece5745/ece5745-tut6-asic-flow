@@ -858,14 +858,12 @@ actually doing.
 
 ```
 
-Some key parameters that you could utilize to get the most out of your 
-designs include high_effort_area_opt, flatten_effort, and gate_clock. 
-While the others are self-explanatory, flatten effort comes in four 
-flavors ranging from no flattening at all, to giving the tool complete 
-freedom in flattening the entire design to optimize for timing, power, a
-nd area. Although we strongly recommend NOT flattening your designs, 
-feel free to play around with the flatten effort and other parameters 
-to see how it impacts your design results.
+Here we can see key parameters like design_name, clock_period, input_delay, 
+output_delay, etc. You can imagine how we might use these values to customize 
+our build. There are also parameters set using their default value, like 
+gate_clock, clk_port, and reset_port. Recall that we do not need to list 
+parameters in our flow.py if we do not plan to change them from their default 
+value. 
 
 To actually run synthesis, all we need to do is run the
 synthesis step like this:
@@ -880,7 +878,7 @@ scripts, and then finish up. Essentially, the automated system is doing
 the same thing as what we did in the previous tutorial, with a little 
 more flexibility and options, and higher quality of results.
 
-The order parameter details what order the `.tcl` scripts will be run 
+The `order` parameter details what order the `.tcl` scripts will be run 
 in for this particular step. You can view the `.tcl` scripts like this:
 
 ```bash
@@ -890,10 +888,32 @@ in for this particular step. You can view the `.tcl` scripts like this:
 
 You may notice the constraints.tcl file is quite similar to the constraints 
 portion of the synthesis manual flow. Here, we set clock constraints, input 
-and output delay, max fanout and transition. Although the mflowgen steps 
+and output delay, max fanout and transition. 
+
+```bash 
+ % less make-path-groups
+ ... 
+ dc_shell> set ports_clock_root [filter_collection \
+                       [get_attribute [get_clocks] sources] \
+                       object_class==port]
+ dc_shell> group_path -name REGOUT \
+                      -to   [all_outputs]
+ dc_shell> group_path -name REGIN \
+                      -from [remove_from_collection [all_inputs] $ports_clock_root]
+ dc_shell> group_path -name FEEDTHROUGH \
+                      -from [remove_from_collection [all_inputs] $ports_clock_root] \
+                      -to   [all_outputs]
+```
+
+Here's an example of some useful commands that exist in the automated flow 
+but not the manual flow. We set up path groups to help Synopsys DC's timing 
+engine. The path group REGOUT starts at a register and ends at an output port. 
+REGIN starts at an input port and ends at a register. FEEDTHROUGH paths start 
+at an input port and end at an output port. Although the mflowgen steps 
 have quite a bit more infrastructure around them than the manual flow, 
 they are really doing the almost the exact same thing. Feel free to dig 
 more into the other tcl scripts if you are curious about how this step works.
+
 
 The first thing to do after you finish synthesis for a new design is to
 _look at the log file_! We cannot stress how importance this is. mflowgen 
@@ -2028,31 +2048,30 @@ Using the Automated ASIC Flow for Design-Space Exploration
 
 One of the key benefits of using an automated ASIC flow is that it
 enables rapid design space exploration of different clock constraints,
-input datasets, and design configurations. In this section, we will
-briefly conduct three different experiments: (1) pushing the sort unit to
-run at a faster clock frequency, (2) exploring the impact different input
-datasets can have on power consumption, and (3) comparing the pipelined
-sort unit to an unpipelined sort unit. This section will be working with
-the PyMTL RTL implementation, so if you attempted to push the Verilog RTL
-implementation in the previous section, we need to go back and regenerate
-the Verilog from the PyMTL RTL implementation. Of course, you should also
+input datasets, and design configurations. As we saw, mflowgen allows us to 
+easily run power analysis on multiple datasets to make comparisons. In this 
+section, we will briefly conduct two different experiments: (1) pushing the 
+sort unit to run at different clock frequencies, and (2) comparing the 
+pipelined sort unit to an unpipelined sort unit. This section will be working 
+with the PyMTL RTL implementation, so if you attempted to push the Verilog 
+RTL implementation in the previous section, we need to go back and regenerate 
+the Verilog from the PyMTL RTL implementation. Of course, you should also 
 feel free to try out these ideas using the Verilog RTL implementation.
 
 ```
  % cd $TOPDIR/sim/build
  % rm -rf *
- % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --translate --dump-vcd
+ % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --translate --dump-vtb
 ```
 
-Recall that the sort unit had no problem meeting the 1ns clock
+Recall that the sort unit had no problem meeting the 0.6ns clock
 constraint. We usually want to push our designs until there is a couple
 of percent negative slack (e.g., less than 5%) to ensure we are
-accurately estimating the true peak performance of our design. So let's
-push the sort unit through the flow again with a clock constraint of
-0.95ns. You need to modify the `flow.py` as follows:
+accurately estimating the true peak performance of our design. With mflowgen, we have the ability to run multiple builds to sweep a range of clock frequencies with ease. All you need to do is update the flow.py script as follows:
+
 
 ```
- % cd $TOPDIR/asic/build
+ % cd $TOPDIR/asic
  % less flow.py
 
 #-------------------------------------------------------------------------
