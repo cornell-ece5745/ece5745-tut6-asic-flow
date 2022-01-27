@@ -19,6 +19,3 @@ You can find the actual tutorial document in the repo here:
 Or online here:
 
  - https://cornell-ece5745.github.io/ece5745-tut6-asic-flow
-
- - https://jbrzozo24.github.io/ece5745-tut6-asic-flow
-
