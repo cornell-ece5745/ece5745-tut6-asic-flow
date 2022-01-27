@@ -44,9 +44,9 @@ def construct():
     'gate_clock'      : False,
     'topographical'   : False,
 
-    # Hold Fixing 
-    'hold_slack'      : 0.070,
-    'setup_slack'     : 0.035,
+    # # Hold Fixing 
+    # 'hold_slack'      : 0.070,
+    # 'setup_slack'     : 0.035,
 
     # PT Power
     'saif_instance'   : 'SortUnitStructRTL__nbits_8_tb/DUT',
