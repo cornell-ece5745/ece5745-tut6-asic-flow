@@ -2544,7 +2544,7 @@ use for VCS.
 
 ```
  % cd $TOPDIR/sim/build
- % ../tut4_verilog/sort/sort-sim --impl rtl-struct --stats --translate --dump-vcd
+ % ../tut4_verilog/sort/sort-sim --impl rtl-struct --stats --translate --dump-vtb
 ```
 
 Take a moment to open up the translated Verilog which should be in a file
@@ -2558,7 +2558,7 @@ Verilog that is used in the ASIC flow.
 
 Once you have tested your design and generated the single Verilog file
 and the VCD file, you can push the design through the ASIC flow using
-PyHFlow like this:
+mflowgen like this:
 
 ```
  % mkdir -p $TOPDIR/asic/build-verilog
@@ -2569,7 +2569,8 @@ PyHFlow like this:
 
 The PyMTL RTL and Verilog RTL designs should show similar results, but
 obviously they won't be exactly the same since the source code is
-different.
+different. Make sure to go through all of the reports to make sure that 
+your design got through thr flow properly. 
 
 To Do On Your Own
 --------------------------------------------------------------------------
