@@ -157,8 +157,11 @@ class SortUnitFlatRTL( Component ):
     # Assign output ports
 
     s.out_val //= s.val_S3
-    for i in range(4):
-      s.out[i] //= s.elm_next_S3[i]
+
+    @update
+    def comb_logic():
+      for i in range(4):
+        s.out[i] @= s.elm_next_S3[i] & (sext(s.out_val, nbits))
 
   #=======================================================================
   # Line tracing

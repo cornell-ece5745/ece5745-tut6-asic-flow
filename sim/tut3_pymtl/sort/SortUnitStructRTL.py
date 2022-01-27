@@ -106,10 +106,13 @@ class SortUnitStructRTL( Component ):
     # Assign output ports
 
     s.out_val //= s.val_S2S3.out
-    s.out[0]  //= s.elm_S2S3[0].out
-    s.out[1]  //= s.minmax_S3.out_min
-    s.out[2]  //= s.minmax_S3.out_max
-    s.out[3]  //= s.elm_S2S3[3].out
+
+    @update
+    def comb_logic():
+      s.out[0]  @= s.elm_S2S3[0].out   & (sext(s.out_val, nbits))
+      s.out[1]  @= s.minmax_S3.out_min & (sext(s.out_val, nbits))
+      s.out[2]  @= s.minmax_S3.out_max & (sext(s.out_val, nbits))
+      s.out[3]  @= s.elm_S2S3[3].out   & (sext(s.out_val, nbits))
 
   #=======================================================================
   # Line tracing
