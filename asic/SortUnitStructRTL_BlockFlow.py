@@ -56,8 +56,6 @@ def construct():
   # Create nodes
   #-----------------------------------------------------------------------
 
-  
-
   # ADK step
 
   g.set_adk( adk_name )
@@ -89,12 +87,12 @@ def construct():
 
   # Give clones new names
 
-  rtlsim.set_name('brg-RTL-4-state-vcssim')
-  glFFsim.set_name('PostSynth-Gate-Level-Simulation')
-  glBAsim.set_name('PostPNR-Gate-Level-Simulation')
+  rtlsim.set_name('brg-rtl-4-state-vcssim')
+  glFFsim.set_name('post-synth-gate-level-simulation')
+  glBAsim.set_name('post-pnr-gate-level-simulation')
 
-  synthpower.set_name('PostSynth-power-analysis')
-  pnrpower.set_name("PostPNR-power-analysis")
+  synthpower.set_name('post-synth-power-analysis')
+  pnrpower.set_name("post-pnr-power-analysis")
 
   info.set_name('build-info')
 
