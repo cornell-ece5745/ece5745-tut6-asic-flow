@@ -53,8 +53,18 @@ def construct():
   } 
 
   #-----------------------------------------------------------------------
+  # Truncate design name at first instance of '__' to run the right tests
+  #-----------------------------------------------------------------------
+  
+  trunc_design_name = parameters['design_name']
+  trunc_design_name = trunc_design_name.split("__", 1)[0]
+  parameters['trunc_design_name'] = trunc_design_name
+
+  #-----------------------------------------------------------------------
   # Create nodes
   #-----------------------------------------------------------------------
+
+  
 
   # ADK step
 
