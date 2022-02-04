@@ -2102,7 +2102,7 @@ the Verilog tutorial. If you have not completed the Verilog tutorial then
 you might want to go back and do that now. Basically the `MinMaxUnit`
 should look like this:
 
-```
+```verilog
 `ifndef TUT4_VERILOG_SORT_MIN_MAX_UNIT_V
 `define TUT4_VERILOG_SORT_MIN_MAX_UNIT_V
 

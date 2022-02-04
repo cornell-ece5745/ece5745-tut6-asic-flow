@@ -169,6 +169,9 @@ def construct():
   g.connect_by_name( glFFsim,        synthpower     ) # saif, vcd
   g.connect_by_name( glBAsim,        pnrpower       ) # saif, vcd
 
+  g.connect( rtlsim.o('sim.summary.txt'), summary.i('4state.summary.txt'))
+  g.connect( glFFsim.o('sim.summary.txt'), summary.i('ff.summary.txt'))
+  g.connect( glBAsim.o('sim.summary.txt'), summary.i('ba.summary.txt'))  
   g.connect( synthpower.o('power.summary.txt'), summary.i('powerFF.summary.txt'))
   g.connect( pnrpower.o('power.summary.txt'), summary.i('powerBA.summary.txt'))
 
